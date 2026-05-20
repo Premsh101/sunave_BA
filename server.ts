@@ -5,8 +5,8 @@ import { Server as SocketIOServer } from 'socket.io';
 import speech from '@google-cloud/speech';
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = 'localhost';
-const port = parseInt(process.env.PORT || '3000', 10);
+const hostname = process.env.HOSTNAME || '0.0.0.0';
+const port = parseInt(process.env.PORT || '3010', 10);
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();

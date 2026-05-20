@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+*.log
+.env*
+coverage
+.DS_Store
+deploy-gcp.ps1
+cloudbuild.yaml
+README.md
+DEPLOY.md
