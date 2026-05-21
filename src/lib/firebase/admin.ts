@@ -1,12 +1,21 @@
 // Firebase Admin SDK (Production-safe for Coolify/Docker)
+// Uses lazy initialization so that env vars are only required at request time,
+// not at build time (avoids failures during `next build` in Docker).
 
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
-function createAdminApp(): App {
+let adminAppInstance: App | undefined;
+let adminAuthInstance: Auth | undefined;
+let adminDbInstance: Firestore | undefined;
+
+function getAdminApp(): App {
+  if (adminAppInstance) return adminAppInstance;
+
   if (getApps().length > 0) {
-    return getApps()[0];
+    adminAppInstance = getApps()[0];
+    return adminAppInstance;
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -17,18 +26,27 @@ function createAdminApp(): App {
     throw new Error('Missing Firebase Admin environment variables');
   }
 
-  return initializeApp({
+  adminAppInstance = initializeApp({
     credential: cert({
       projectId,
       clientEmail,
       privateKey,
     }),
   });
+
+  return adminAppInstance;
 }
 
-const adminApp = createAdminApp();
+export function getAdminAuth(): Auth {
+  if (!adminAuthInstance) {
+    adminAuthInstance = getAuth(getAdminApp());
+  }
+  return adminAuthInstance;
+}
 
-export const adminAuth: Auth = getAuth(adminApp);
-export const adminDb: Firestore = getFirestore(adminApp);
-
-export default adminApp;
+export function getAdminDb(): Firestore {
+  if (!adminDbInstance) {
+    adminDbInstance = getFirestore(getAdminApp());
+  }
+  return adminDbInstance;
+}
