@@ -49,11 +49,14 @@ export default function Login() {
       const credential = await signInWithEmailAndPassword(auth, email, password);
       // Ensure session cookie is set before navigating so middleware allows access.
       const idToken = await credential.user.getIdToken();
-      await fetch('/api/auth/session', {
+      const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
+      if (!sessionRes.ok) {
+        throw new Error('Failed to create session. Please try again.');
+      }
       router.push(redirect);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');
@@ -69,11 +72,14 @@ export default function Login() {
       const credential = await signInWithGoogle();
       // Ensure session cookie is set before navigating so middleware allows access.
       const idToken = await credential.user.getIdToken();
-      await fetch('/api/auth/session', {
+      const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
+      if (!sessionRes.ok) {
+        throw new Error('Failed to create session. Please try again.');
+      }
       router.push(redirect);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in with Google.');
