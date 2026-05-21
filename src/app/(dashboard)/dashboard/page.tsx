@@ -3,12 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/AuthContext';
-import { Video, FileText, Settings, Plus, Sparkles, Clock, LayoutTemplate } from 'lucide-react';
+import { Video, FileText, Settings, Clock, LayoutTemplate } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { typography, semantic, container, grid } from '@/styles/theme';
-import { gradientText } from '@/styles/mixins';
+import { typography, semantic, gradients } from '@/styles/theme';
+import { grid } from '@/styles/mixins';
 
 export default function DashboardHome() {
   const { user } = useAuth();

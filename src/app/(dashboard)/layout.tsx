@@ -61,7 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     display: 'flex',
     flexDirection: 'column',
     zIndex: zIndex.sticky,
-    transition: transitions.transform,
+    transition: transitions.base,
     transform: 'translateX(0)',
   };
 
