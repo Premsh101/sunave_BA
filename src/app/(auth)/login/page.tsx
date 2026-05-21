@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Sparkles, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
+import { Sparkles, Mail, Lock, Globe } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -141,7 +141,7 @@ export default function Login() {
       </div>
 
       {/* Right side - Visual */}
-      <div style={{ flex: 1, display: 'none', '@media (min-width: 1024px)': { display: 'block' }, background: semantic.bg.secondary, position: 'relative', overflow: 'hidden' }}>
+      <div className="login-visual-panel" style={{ flex: 1, display: 'none', background: semantic.bg.secondary, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(99,102,241,0.1) 0%, transparent 70%)' }} />
         
         <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem' }}>
@@ -165,7 +165,7 @@ export default function Login() {
 
       <style>{`
         @media (min-width: 1024px) {
-          div:nth-child(2) { display: block !important; }
+          .login-visual-panel { display: block !important; }
         }
       `}</style>
     </div>
