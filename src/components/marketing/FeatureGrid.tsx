@@ -36,7 +36,7 @@ const FEATURES = [
     features: [
       { icon: <FileText size={14} />, text: 'MOM, BRD, PRD, User Stories & more' },
       { icon: <Zap size={14} />, text: 'Generated in seconds from any transcript' },
-      { icon: <CheckSquare size={14} />, text: 'Customisable tone — professional to executive' },
+      { icon: <CheckSquare size={14} />, text: 'Customizable tone — professional to executive' },
       { icon: <MessageSquare size={14} />, text: 'Export as markdown or plain text' },
     ],
   },

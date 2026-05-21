@@ -50,7 +50,8 @@ const DOCUMENT_LINES = [
   '• Graceful fallback on gateway failure',
 ];
 
-export default function MeetingDemoWidget() {
+const TRANSCRIPT_INTERVAL_MS = 900;
+const DOCUMENT_INTERVAL_MS = 350;
   const [activeTab, setActiveTab] = useState<TabId>('transcript');
   const [playing, setPlaying] = useState(false);
   const [lines, setLines] = useState<string[]>([]);
@@ -81,7 +82,7 @@ export default function MeetingDemoWidget() {
       } else {
         stopStreaming();
       }
-    }, tab === 'transcript' ? 900 : 350);
+    }, tab === 'transcript' ? TRANSCRIPT_INTERVAL_MS : DOCUMENT_INTERVAL_MS);
   }, [stopStreaming]);
 
   useEffect(() => {

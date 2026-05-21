@@ -19,7 +19,7 @@ const METRICS = [
     icon: <FileText size={28} />,
     value: '10+',
     label: 'Document Types',
-    description: 'BRD, MOM, User Stories, PRD, Sprint Plans, Risk Registers and more',
+    description: 'BRD, MOMs, User Stories, PRD, Sprint Plans, Risk Registers and more',
     color: colors.brand[400],
     glow: 'rgba(99,102,241,0.25)',
     gradient: `linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))`,
