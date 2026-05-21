@@ -7,8 +7,9 @@ import { Video, FileText, Settings, Plus, Sparkles, Clock, LayoutTemplate } from
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { typography, semantic, container, grid } from '@/styles/theme';
+import { typography, semantic, gradients } from '@/styles/theme';
 import { gradientText } from '@/styles/mixins';
+import { grid } from '@/styles/mixins';
 
 export default function DashboardHome() {
   const { user } = useAuth();

@@ -3,14 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Sparkles, Mail, Lock, Chrome, ArrowRight } from 'lucide-react';
+import { Sparkles, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { colors, typography, semantic, container, flexCenter, flexColumn } from '@/styles/theme';
+import { colors, typography, semantic } from '@/styles/theme';
+import { flexCenter } from '@/styles/mixins';
 import { gradientText } from '@/styles/mixins';
 
 export default function Login() {
@@ -86,7 +87,7 @@ export default function Login() {
           <Button 
             variant="secondary" 
             fullWidth 
-            icon={<Chrome size={18} />} 
+            icon={<Globe size={18} />} 
             onClick={handleGoogleLogin}
             loading={isGoogleLoading}
             disabled={isLoading}
