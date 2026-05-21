@@ -30,6 +30,12 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    if (!auth) {
+      setError('Authentication is not configured.');
+      setIsLoading(false);
+      return;
+    }
     
     try {
       await signInWithEmailAndPassword(auth, email, password);

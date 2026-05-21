@@ -8,7 +8,7 @@ import {
   signOut as firebaseSignOut,
   type User as FirebaseUser 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import type { SunaveUser } from '@/types/user';
@@ -38,12 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fUser) => {
+    if (!auth || !db) {
+      setLoading(false);
+      return;
+    }
+
+    const authInstance = auth;
+    const dbInstance = db;
+
+    const unsubscribe = onAuthStateChanged(authInstance, async (fUser) => {
       setFirebaseUser(fUser);
       
       if (fUser) {
         // Fetch or create SunaveUser document
-        const userRef = doc(db, COLLECTIONS.USERS, fUser.uid);
+        const userRef = doc(dbInstance, COLLECTIONS.USERS, fUser.uid);
         const userSnap = await getDoc(userRef);
         
         if (userSnap.exists()) {
@@ -108,11 +116,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!auth) {
+      throw new Error('Firebase authentication is not configured.');
+    }
+
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
   };
 
   const signOut = async () => {
+    if (!auth) {
+      return;
+    }
+
     await firebaseSignOut(auth);
   };
 
