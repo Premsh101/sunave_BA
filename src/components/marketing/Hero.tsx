@@ -181,7 +181,7 @@ export default function Hero() {
             {/* Left panel — transcript */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.success[500], animation: 'pulse 2s ease-in-out infinite' }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.success[500], animation: animations.pulse(2) }} />
                 <div style={skeletonStyle('80px', '8px')} />
               </div>
               {[100, 80, 95, 65, 85, 70, 90, 50].map((w, i) => (
