@@ -6,7 +6,8 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   signOut as firebaseSignOut,
-  type User as FirebaseUser 
+  type User as FirebaseUser,
+  type UserCredential,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/client';
@@ -18,7 +19,7 @@ interface AuthContextType {
   user: SunaveUser | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<UserCredential>;
   signOut: () => Promise<void>;
 }
 
@@ -26,7 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   firebaseUser: null,
   loading: true,
-  signInWithGoogle: async () => {},
+  signInWithGoogle: async () => { throw new Error('AuthContext not ready'); },
   signOut: async () => {},
 });
 
@@ -115,13 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<UserCredential> => {
     if (!auth) {
       throw new Error('Firebase authentication is not available. Ensure all NEXT_PUBLIC_FIREBASE_* environment variables are set.');
     }
 
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    return await signInWithPopup(auth, provider);
   };
 
   const signOut = async () => {
