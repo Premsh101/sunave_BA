@@ -99,7 +99,7 @@ export default function GenerateDocumentModal({ onClose, onGenerated, preloadedT
             sectionCount: 0,
             generationTime: 0,
             tokensUsed: 0,
-            model: 'gemini-1.5-pro',
+            model: 'gemini-2.0-flash',
             promptVersion: '1.0',
           },
           createdAt: new Date().toISOString(),
