@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, type CSSProperties } from 'react';
 import { Play, Pause, Mic, TerminalSquare } from 'lucide-react';
-import { colors, typography, semantic, borderRadius, gradients, shadows } from '@/styles/theme';
+import { colors, typography, semantic, borderRadius } from '@/styles/theme';
+import animations from '@/styles/animations';
 
 const TABS = [
   { id: 'recruitment', label: 'Recruitment Screening Simulation' },
@@ -294,7 +295,7 @@ export default function AudioSandbox() {
         </div>
 
         {/* Terminal */}
-        <div style={terminalStyle} ref={terminalRef}>
+        <div style={terminalStyle} ref={terminalRef} className="sandbox-terminal">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <TerminalSquare size={12} color={colors.accent[400]} />
             <span style={{ fontSize: '0.65rem', color: semantic.text.muted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
@@ -323,7 +324,7 @@ export default function AudioSandbox() {
             ))
           )}
           {playing && lineIndex < TERMINAL_LINES[activeTab].length && (
-            <span style={{ color: colors.accent[400], animation: 'pulse 1s ease-in-out infinite' }}>█</span>
+            <span style={{ color: colors.accent[400], animation: animations.pulse(1) }}>█</span>
           )}
         </div>
       </div>

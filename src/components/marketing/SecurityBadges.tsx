@@ -6,16 +6,15 @@ import { colors, typography, semantic, borderRadius } from '@/styles/theme';
 import { container } from '@/styles/mixins';
 import animations from '@/styles/animations';
 
-const BADGES = [
-  { icon: <ShieldCheck size={18} />, label: 'GDPR Compliant Architecture', color: colors.success[400] },
-  { icon: <Lock size={18} />, label: 'End-to-End Encryption', color: colors.accent[400] },
-  { icon: <Server size={18} />, label: 'Isolated Tenant Hosting', color: colors.brand[400] },
-  { icon: <FileText size={18} />, label: 'ISO-Ready Security Protocols', color: colors.warning[400] },
+const BASE_BADGES = [
   { icon: <ShieldCheck size={18} />, label: 'GDPR Compliant Architecture', color: colors.success[400] },
   { icon: <Lock size={18} />, label: 'End-to-End Encryption', color: colors.accent[400] },
   { icon: <Server size={18} />, label: 'Isolated Tenant Hosting', color: colors.brand[400] },
   { icon: <FileText size={18} />, label: 'ISO-Ready Security Protocols', color: colors.warning[400] },
 ];
+
+// Duplicate for seamless marquee loop
+const BADGES = [...BASE_BADGES, ...BASE_BADGES];
 
 function BadgeItem({ badge }: { badge: typeof BADGES[number] }) {
   const [hovered, setHovered] = useState(false);
