@@ -73,7 +73,7 @@ export default function MeetingsPage() {
             Meetings
           </h1>
           <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-            All your recorded meetings and transcripts
+            All your meetings and transcripts
           </p>
         </div>
         <Link href="/meetings/live">
