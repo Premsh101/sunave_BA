@@ -25,7 +25,7 @@ export const COLLECTIONS = {
 
 const getDb = () => {
   if (!db) {
-    throw new Error('Firebase is not configured.');
+    throw new Error('Firebase is not configured. Ensure all NEXT_PUBLIC_FIREBASE_* environment variables are set.');
   }
 
   return db;

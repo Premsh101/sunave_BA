@@ -32,7 +32,7 @@ export default function Login() {
     setIsLoading(true);
 
     if (!auth) {
-      setError('Authentication is not configured.');
+      setError('Authentication is not available. Please check your configuration or try again later.');
       setIsLoading(false);
       return;
     }
@@ -147,7 +147,7 @@ export default function Login() {
       </div>
 
       {/* Right side - Visual */}
-      <div className="login-visual-panel" style={{ flex: 1, display: 'none', background: semantic.bg.secondary, position: 'relative', overflow: 'hidden' }}>
+      <div className="login-visual-panel" style={{ flex: 1, background: semantic.bg.secondary, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(99,102,241,0.1) 0%, transparent 70%)' }} />
         
         <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem' }}>
@@ -170,6 +170,7 @@ export default function Login() {
       </div>
 
       <style>{`
+        .login-visual-panel { display: none; }
         @media (min-width: 1024px) {
           .login-visual-panel { display: block !important; }
         }

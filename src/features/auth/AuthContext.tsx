@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!auth) {
-      throw new Error('Firebase authentication is not configured.');
+      throw new Error('Firebase authentication is not available. Ensure all NEXT_PUBLIC_FIREBASE_* environment variables are set.');
     }
 
     const provider = new GoogleAuthProvider();

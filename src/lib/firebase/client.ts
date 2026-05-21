@@ -3,7 +3,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp, type FirebaseOptions 
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
-const firebaseConfig: FirebaseOptions = {
+const firebaseEnv = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -12,12 +12,15 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const hasFirebaseConfig = Object.values(firebaseConfig).every(Boolean);
+const hasAllFirebaseEnvVars = Object.values(firebaseEnv).every((value): value is string => Boolean(value));
+const firebaseConfig: FirebaseOptions | null = hasAllFirebaseEnvVars ? firebaseEnv : null;
 
 // Initialize Firebase (singleton) only when public config is available.
-const app: FirebaseApp | null = hasFirebaseConfig
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
-  : null;
+let app: FirebaseApp | null = null;
+
+if (firebaseConfig) {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+}
 
 export const auth: Auth | null = app ? getAuth(app) : null;
 export const db: Firestore | null = app ? getFirestore(app) : null;
