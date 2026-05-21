@@ -2,11 +2,29 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
+function parsePrivateKey(raw: string): string {
+  let key = raw.trim();
+  // Some deployment platforms (e.g. Coolify, Docker env UI) wrap the pasted
+  // value in matching quotes.  Strip them only when both ends carry the same
+  // quote character so we don't accidentally corrupt a key that genuinely
+  // starts or ends with a quote.
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1);
+  }
+  // Replace literal two-character sequences \n with actual newline characters.
+  // This covers the common case where the PEM key was stored with escaped
+  // newlines rather than real ones (e.g. copied directly from a JSON file).
+  key = key.replace(/\\n/g, '\n');
+  return key;
+}
+
 function initApp() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY || '';
-  const privateKey = rawPrivateKey.replace(/\\n/g, '\n');
+  const privateKey = parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY ?? '');
 
   if (!projectId) throw new Error('Missing FIREBASE_PROJECT_ID');
   if (!clientEmail) throw new Error('Missing FIREBASE_CLIENT_EMAIL');
