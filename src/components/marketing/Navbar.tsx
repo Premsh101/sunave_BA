@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Mic, Zap } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import ThemeSelector from '@/components/ui/ThemeSelector';
 import { gradients, borderRadius, typography, transitions, shadows, semantic, zIndex } from '@/styles/theme';
 
 const navLinks = [
   { label: 'Features', href: '/features' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Enterprise', href: '/enterprise' },
-  { label: 'Integrations', href: '/integrations' },
+  { label: 'Solutions', href: '/enterprise' },
+  { label: 'Docs', href: '/docs' },
   { label: 'Security', href: '/security' },
-  { label: 'Blog', href: '/blog' },
 ];
 
 export default function Navbar() {
@@ -70,7 +68,6 @@ export default function Navbar() {
     justifyContent: 'center',
     boxShadow: shadows.glow,
   };
-
   const linksContainerStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -138,7 +135,7 @@ export default function Navbar() {
         <div style={containerStyle}>
           <Link href="/" style={logoStyle}>
             <div style={logoIconStyle}>
-              <Sparkles size={18} color="#fff" />
+              <Mic size={16} color="#fff" />
             </div>
             Sunave
           </Link>
@@ -158,9 +155,9 @@ export default function Navbar() {
             <Link href="/login">
               <Button variant="ghost" size="sm">Log in</Button>
             </Link>
-            <Link href="/signup">
-              <Button variant="primary" size="sm" icon={<Sparkles size={14} />}>
-                Start Free
+            <Link href="/contact">
+              <Button variant="primary" size="sm" icon={<Zap size={14} />}>
+                Enterprise Demo
               </Button>
             </Link>
           </div>
@@ -183,7 +180,7 @@ export default function Navbar() {
           <div style={mobileHeaderStyle}>
             <Link href="/" style={logoStyle} onClick={() => setMobileOpen(false)}>
               <div style={logoIconStyle}>
-                <Sparkles size={18} color="#fff" />
+                <Mic size={16} color="#fff" />
               </div>
               Sunave
             </Link>
@@ -207,8 +204,8 @@ export default function Navbar() {
             <Link href="/login" onClick={() => setMobileOpen(false)}>
               <Button variant="secondary" fullWidth>Log in</Button>
             </Link>
-            <Link href="/signup" onClick={() => setMobileOpen(false)}>
-              <Button variant="primary" fullWidth icon={<Sparkles size={14} />}>Start Free</Button>
+            <Link href="/contact" onClick={() => setMobileOpen(false)}>
+              <Button variant="primary" fullWidth icon={<Zap size={14} />}>Enterprise Demo</Button>
             </Link>
           </div>
         </div>
