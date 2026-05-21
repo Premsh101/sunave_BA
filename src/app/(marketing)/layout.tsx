@@ -4,9 +4,10 @@ import Footer from '@/components/marketing/Footer';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Sunave — Enterprise AI Meeting Intelligence Platform',
+    default: 'Sunave — Enterprise Voice Automation Platform',
     template: '%s | Sunave',
   },
+  description: 'Deploy production-ready enterprise voicebots at sub-500ms latency for recruitment screening and merchant verification.',
 };
 
 export default function MarketingLayout({
