@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { colors, gradients, borderRadius, typography, transitions, shadows, semantic, zIndex } from '@/styles/theme';
+import ThemeSelector from '@/components/ui/ThemeSelector';
+import { gradients, borderRadius, typography, transitions, shadows, semantic, zIndex } from '@/styles/theme';
 
 const navLinks = [
   { label: 'Features', href: '/features' },
@@ -32,10 +33,10 @@ export default function Navbar() {
     right: 0,
     zIndex: zIndex.sticky,
     padding: scrolled ? '0.75rem 0' : '1rem 0',
-    background: scrolled ? 'rgba(9,9,11,0.8)' : 'transparent',
+    background: scrolled ? 'var(--bg-nav-scrolled)' : 'transparent',
     backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
     WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-    borderBottom: scrolled ? `1px solid rgba(255,255,255,0.05)` : '1px solid transparent',
+    borderBottom: scrolled ? `1px solid ${semantic.border.subtle}` : '1px solid transparent',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
@@ -89,7 +90,7 @@ export default function Navbar() {
   const ctaContainerStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: '0.5rem',
   };
 
   const mobileMenuBtnStyle: CSSProperties = {
@@ -104,7 +105,7 @@ export default function Navbar() {
   const mobileOverlayStyle: CSSProperties = {
     position: 'fixed',
     inset: 0,
-    background: 'rgba(9,9,11,0.95)',
+    background: 'var(--bg-mobile-menu)',
     backdropFilter: 'blur(20px)',
     zIndex: zIndex.overlay,
     display: 'flex',
@@ -145,7 +146,7 @@ export default function Navbar() {
           {/* Desktop Links */}
           <div style={linksContainerStyle} className="desktop-nav-links">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} style={linkStyle}>
+              <Link key={link.href} href={link.href} style={linkStyle} className="nav-link">
                 {link.label}
               </Link>
             ))}
@@ -153,6 +154,7 @@ export default function Navbar() {
 
           {/* CTA Buttons */}
           <div style={ctaContainerStyle} className="desktop-nav-cta">
+            <ThemeSelector />
             <Link href="/login">
               <Button variant="ghost" size="sm">Log in</Button>
             </Link>
@@ -185,13 +187,16 @@ export default function Navbar() {
               </div>
               Sunave
             </Link>
-            <button
-              style={{ ...mobileMenuBtnStyle, display: 'flex' }}
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close menu"
-            >
-              <X size={24} />
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <ThemeSelector />
+              <button
+                style={{ ...mobileMenuBtnStyle, display: 'flex' }}
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} style={mobileLinkStyle} onClick={() => setMobileOpen(false)}>
@@ -209,12 +214,16 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Responsive styles injected via style tag for mobile breakpoint */}
+      {/* Responsive + hover styles */}
       <style>{`
         @media (max-width: 768px) {
           .desktop-nav-links { display: none !important; }
           .desktop-nav-cta { display: none !important; }
           .mobile-menu-btn { display: flex !important; }
+        }
+        .nav-link:hover {
+          color: var(--text-primary) !important;
+          background: var(--bg-surface) !important;
         }
       `}</style>
     </>

@@ -55,7 +55,7 @@ const getVariantStyles = (variant: ButtonVariant, hovered: boolean): CSSProperti
     case 'ghost':
       return {
         ...base,
-        background: hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+        background: hovered ? semantic.bg.surface : 'transparent',
         color: hovered ? semantic.text.primary : semantic.text.secondary,
       };
     case 'danger':
