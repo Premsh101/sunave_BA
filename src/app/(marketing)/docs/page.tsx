@@ -23,7 +23,7 @@ const sections = [
   {
     icon: <Mic size={28} color={colors.accent[400]} />,
     title: 'Transcription API',
-    description: 'Stream or upload audio to Sunave\'s transcription endpoint. Supports WebRTC, file uploads, and live browser capture.',
+    description: 'Stream or upload audio via dedicated transcription endpoints. Supports WebRTC streams, file uploads, and live browser capture.',
     tag: 'API',
   },
   {

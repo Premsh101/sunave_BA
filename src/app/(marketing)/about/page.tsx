@@ -39,7 +39,7 @@ const values = [
 const stats = [
   { stat: '10,000+', label: 'Enterprise users' },
   { stat: '40+', label: 'Countries' },
-  { stat: '98.9%', label: 'Uptime' },
+  { stat: '98.9%', label: 'Service uptime' },
   { stat: '97%', label: 'Transcription accuracy' },
 ];
 

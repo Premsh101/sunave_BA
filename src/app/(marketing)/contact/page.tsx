@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const contactOptions = [
   {
     icon: <Mail size={28} color={colors.brand[400]} />,
-    title: 'General enquiries',
+    title: 'General inquiries',
     description: 'Questions about Sunave, the product, or our company.',
     action: 'Email us',
     href: 'mailto:hello@sunave.tech',
