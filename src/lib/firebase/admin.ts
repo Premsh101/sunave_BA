@@ -19,18 +19,21 @@ function initApp() {
   return app;
 }
 
+let _adminAuth: ReturnType<typeof getAuth> | undefined;
+let _adminDb: ReturnType<typeof getFirestore> | undefined;
+
 export const adminAuth = new Proxy({} as ReturnType<typeof getAuth>, {
   get(_target, prop, receiver) {
-    const auth = getAuth(initApp());
-    const value = Reflect.get(auth, prop, receiver);
-    return typeof value === 'function' ? value.bind(auth) : value;
+    _adminAuth ??= getAuth(initApp());
+    const value = Reflect.get(_adminAuth, prop, receiver);
+    return typeof value === 'function' ? value.bind(_adminAuth) : value;
   },
 });
 
 export const adminDb = new Proxy({} as ReturnType<typeof getFirestore>, {
   get(_target, prop, receiver) {
-    const db = getFirestore(initApp());
-    const value = Reflect.get(db, prop, receiver);
-    return typeof value === 'function' ? value.bind(db) : value;
+    _adminDb ??= getFirestore(initApp());
+    const value = Reflect.get(_adminDb, prop, receiver);
+    return typeof value === 'function' ? value.bind(_adminDb) : value;
   },
 });
