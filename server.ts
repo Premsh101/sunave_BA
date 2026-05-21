@@ -189,6 +189,7 @@ app.prepare().then(() => {
 
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
+    // streamingRecognize returns a Pumpify stream (the concrete type from google-gax)
     let recognizeStream: ReturnType<SpeechClient['streamingRecognize']> | null = null;
 
     socket.on('startGoogleCloudStream', (config) => {

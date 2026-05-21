@@ -65,6 +65,7 @@ export default function Card({
     transition: transitions.smooth,
     cursor: hoverable || onClick ? 'pointer' : 'default',
     transform: hovered && hoverable ? 'translateY(-4px) scale(1.01)' : 'none',
+    willChange: hoverable ? 'transform' : 'auto',
     ...getVariantStyles(),
     ...style,
   };
