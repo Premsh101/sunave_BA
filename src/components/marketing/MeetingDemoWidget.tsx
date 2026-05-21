@@ -52,6 +52,8 @@ const DOCUMENT_LINES = [
 
 const TRANSCRIPT_INTERVAL_MS = 900;
 const DOCUMENT_INTERVAL_MS = 350;
+
+export default function MeetingDemoWidget() {
   const [activeTab, setActiveTab] = useState<TabId>('transcript');
   const [playing, setPlaying] = useState(false);
   const [lines, setLines] = useState<string[]>([]);

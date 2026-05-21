@@ -44,14 +44,40 @@ export function useTranscription(language = 'en-US') {
       } else {
         stream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
-          audio: true,
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            sampleRate: 16000,
+          },
         });
+
+        // Browser or user may not provide an audio track (e.g. user didn't
+        // tick "Share tab audio", or the OS doesn't support system capture).
+        if (stream.getAudioTracks().length === 0) {
+          stream.getTracks().forEach((t) => t.stop());
+          setError(
+            'No audio track detected. When prompted, make sure to tick "Share tab audio" (or "Share system audio"). ' +
+            'Alternatively, use "Capture Microphone Only".'
+          );
+          return;
+        }
       }
 
       mediaStreamRef.current = stream;
 
       const audioContext = new window.AudioContext({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
+
+      // Guard: ensure the stream actually has at least one audio track before
+      // connecting it to the AudioContext (mic path should always have one, but
+      // this prevents a crash in unusual browser/device configurations).
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        audioContext.close();
+        stream.getTracks().forEach((t) => t.stop());
+        setError('No audio track available. Please check your microphone permissions.');
+        return;
+      }
 
       const source = audioContext.createMediaStreamSource(stream);
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
