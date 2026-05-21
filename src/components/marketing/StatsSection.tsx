@@ -1,37 +1,46 @@
 'use client';
 
 import React, { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { Zap, Server, Brain } from 'lucide-react';
+import { FileText, Zap, Brain, Layout } from 'lucide-react';
 import { typography, semantic, colors, borderRadius, gradients } from '@/styles/theme';
 import { container } from '@/styles/mixins';
 
 const METRICS = [
   {
     icon: <Zap size={28} />,
-    value: '<500ms',
-    label: 'End-to-End Latency',
-    description: 'STT + LLM Reasoning + TTS pipeline execution speed',
+    value: 'Instant',
+    label: 'Document Generation',
+    description: 'AI converts your meeting transcript into a structured document in seconds',
     color: colors.accent[400],
     glow: 'rgba(6,182,212,0.25)',
     gradient: `linear-gradient(135deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04))`,
   },
   {
-    icon: <Server size={28} />,
-    value: '99.99%',
-    label: 'Core Runtime Uptime',
-    description: 'Built for high-concurrency elastic scaling',
+    icon: <FileText size={28} />,
+    value: '10+',
+    label: 'Document Types',
+    description: 'BRD, MOMs, User Stories, PRD, Sprint Plans, Risk Registers and more',
+    color: colors.brand[400],
+    glow: 'rgba(99,102,241,0.25)',
+    gradient: `linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))`,
+  },
+  {
+    icon: <Brain size={28} />,
+    value: '98%',
+    label: 'Transcription Accuracy',
+    description: 'Fine-tuned speech recognition with speaker identification support',
     color: colors.success[400],
     glow: 'rgba(74,222,128,0.2)',
     gradient: `linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.03))`,
   },
   {
-    icon: <Brain size={28} />,
-    value: '98%',
-    label: 'NL Intent Match',
-    description: 'Fine-tuned open-source voice models on isolated infrastructure',
-    color: colors.brand[400],
-    glow: 'rgba(99,102,241,0.25)',
-    gradient: `linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))`,
+    icon: <Layout size={28} />,
+    value: 'Zero',
+    label: 'Bots in Your Meetings',
+    description: 'Native browser transcription — no recording bot joins your call',
+    color: colors.warning[400],
+    glow: 'rgba(251,191,36,0.2)',
+    gradient: `linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.03))`,
   },
 ];
 
@@ -79,7 +88,6 @@ function MetricCard({ metric, active, index }: { metric: typeof METRICS[number];
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Corner glow accent */}
       {hovered && (
         <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: `radial-gradient(circle, ${metric.glow} 0%, transparent 70%)`, pointerEvents: 'none' }} />
       )}
@@ -139,22 +147,21 @@ export default function StatsSection() {
 
   const gridStyle: CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
     gap: '1.5rem',
   };
 
   return (
     <section style={sectionStyle} ref={sectionRef} id="metrics">
-      {/* Background accent */}
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(6,182,212,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
       <div style={container}>
         <div style={headingStyle}>
           <div style={{ fontSize: typography.fontSize.xs, color: colors.accent[400], fontWeight: typography.fontWeight.semibold, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-            REAL PERFORMANCE DATA
+            WHY SUNAVE
           </div>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: typography.fontWeight.bold, color: semantic.text.primary, letterSpacing: typography.letterSpacing.tight }}>
-            Built on measurable results
+            Built for teams that move fast
           </h2>
         </div>
 

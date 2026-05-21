@@ -71,20 +71,21 @@ export default function CTASection() {
               No credit card required
             </div>
 
-            <h2 style={titleStyle}>Ready to automate<br />your voice workflows?</h2>
+            <h2 style={titleStyle}>Stop writing meeting notes.<br />Let Sunave do it.</h2>
             <p style={subtitleStyle}>
-              Join enterprise teams using Sunave to deploy production-grade voicebots for recruitment screening and merchant verification — at sub-500ms latency.
+              Join teams who use Sunave to transcribe meetings live and instantly generate
+              BRDs, MOMs, User Stories and more — with zero bots and zero hassle.
             </p>
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/signup">
                 <Button variant="primary" size="lg" iconRight={<ArrowRight size={18} />}>
-                  Build an Agent
+                  Start for Free
                 </Button>
               </Link>
-              <Link href="/contact">
+              <Link href="/features">
                 <Button variant="secondary" size="lg" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', borderColor: 'rgba(255,255,255,0.15)' }}>
-                  Request Enterprise Demo
+                  Explore Features
                 </Button>
               </Link>
             </div>
