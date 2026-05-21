@@ -30,11 +30,19 @@ function validateEnvVars(): { projectId: string; clientEmail: string; privateKey
     .replace(/\\n/g, '\n')  // convert literal \n to real newlines
     .trim();
 
-  console.log('[FirebaseAdmin] Key diagnostics', {
-    hasKey: !!privateKey,
-    length: privateKey.length,
-    prefix: privateKey.substring(0, 30),
-  });
+  // Gate key diagnostics to non-production to avoid partial key exposure in logs
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[FirebaseAdmin] Key diagnostics', {
+      hasKey: !!privateKey,
+      length: privateKey.length,
+      prefix: privateKey.substring(0, 30),
+    });
+  } else {
+    console.log('[FirebaseAdmin] Key diagnostics', {
+      hasKey: !!privateKey,
+      length: privateKey.length,
+    });
+  }
 
   if (!projectId) {
     console.error('[FirebaseAdmin] FATAL: Missing FIREBASE_PROJECT_ID');
