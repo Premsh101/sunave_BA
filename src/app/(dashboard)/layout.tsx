@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/features/auth/AuthContext';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
+import { PageLoader } from '@/components/ui/Spinner';
 import { colors, typography, semantic, transitions, zIndex } from '@/styles/theme';
 
 const sidebarLinks = [
@@ -40,7 +41,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
+
+  // Client-side auth guard: redirect to /login only after Firebase has
+  // finished initialising (loading=false). Prevents redirect loops caused
+  // by checking auth before onAuthStateChanged resolves.
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user) {
+    return <PageLoader />;
+  }
 
   const handleSignOut = async () => {
     await signOut();

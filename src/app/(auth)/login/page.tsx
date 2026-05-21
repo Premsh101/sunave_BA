@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles, Mail, Lock, Globe } from 'lucide-react';
@@ -22,9 +22,17 @@ export default function Login() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, user, loading } = useAuth();
   
   const redirect = searchParams?.get('redirect') || '/dashboard';
+
+  // Auto-redirect already-authenticated users (e.g. after page refresh or
+  // when onAuthStateChanged resolves while the user is on /login).
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace(redirect);
+    }
+  }, [loading, user, redirect, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +46,15 @@ export default function Login() {
     }
     
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Wait a moment for the auth state observer to set the session cookie
-      setTimeout(() => {
-        router.push(redirect);
-      }, 1000);
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      // Ensure session cookie is set before navigating so middleware allows access.
+      const idToken = await credential.user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+      router.push(redirect);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');
       setIsLoading(false);
@@ -54,10 +66,15 @@ export default function Login() {
     setIsGoogleLoading(true);
     
     try {
-      await signInWithGoogle();
-      setTimeout(() => {
-        router.push(redirect);
-      }, 1000);
+      const credential = await signInWithGoogle();
+      // Ensure session cookie is set before navigating so middleware allows access.
+      const idToken = await credential.user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+      router.push(redirect);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in with Google.');
       setIsGoogleLoading(false);
