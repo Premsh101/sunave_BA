@@ -74,7 +74,7 @@ export default function DocumentsPage() {
 
   const handleDelete = async (docId: string) => {
     if (!db) return;
-    if (!confirm('Delete this document?')) return;
+    if (!window.confirm('Delete this document? This cannot be undone.')) return;
     await deleteDoc(doc(db, COLLECTIONS.AI_DOCUMENTS, docId));
     setDocuments((prev) => prev.filter((d) => d.id !== docId));
   };

@@ -188,6 +188,9 @@ export default function SettingsPage() {
                   <span style={{ fontSize: typography.fontSize.sm, color: semantic.text.primary }}>{label}</span>
                   <button
                     onClick={() => setter(!value)}
+                    aria-checked={value}
+                    role="switch"
+                    aria-label={label}
                     style={{
                       width: 44, height: 24, borderRadius: 12,
                       background: value ? colors.brand[500] : semantic.bg.elevated,

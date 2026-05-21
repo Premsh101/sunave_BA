@@ -129,7 +129,7 @@ export default function BillingPage() {
                 <Button
                   variant={plan.isPopular ? 'primary' : 'secondary'}
                   fullWidth
-                  onClick={() => alert('Payment integration coming soon. Contact support@sunave.ai to upgrade.')}
+                  onClick={() => window.alert('Payment integration coming soon.\n\nTo upgrade now, email: support@sunave.ai')}
                 >
                   {currentPlan === 'free' ? `Upgrade to ${plan.name}` : 'Switch Plan'}
                 </Button>

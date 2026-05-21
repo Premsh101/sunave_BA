@@ -169,7 +169,7 @@ export default function LiveMeeting() {
       {/* Generate Document Modal */}
       {showGenerateModal && (
         <GenerateDocumentModal
-          preloadedTranscript={transcript + (interimTranscript ? ' ' + interimTranscript : '')}
+          preloadedTranscript={[transcript, interimTranscript].filter(Boolean).join(' ').trim()}
           onClose={() => setShowGenerateModal(false)}
           onGenerated={() => {
             setShowGenerateModal(false);
