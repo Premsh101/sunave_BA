@@ -3,9 +3,10 @@
 // not at build time (avoids failures during `next build` in Docker).
 //
 // Private key parsing handles:
-//   1. Literal \n sequences (common in .env files and CI/CD systems)
-//   2. Surrounding double-quotes (Coolify wraps values in double-quotes)
-//   3. Extra whitespace / trailing newlines
+//   1. Surrounding double-quotes (Coolify wraps values in double-quotes)
+//   2. Escaped double-quotes inside the value
+//   3. Literal \n sequences (common in .env files and CI/CD systems)
+//   4. Extra whitespace / trailing newlines
 // This resolves OpenSSL 3 "unsupported" decoder errors caused by malformed keys.
 
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
@@ -16,18 +17,24 @@ let adminAppInstance: App | undefined;
 let adminAuthInstance: Auth | undefined;
 let adminDbInstance: Firestore | undefined;
 
-function parsePrivateKey(raw: string | undefined): string | undefined {
-  if (!raw) return undefined;
-  return raw
-    .replace(/^["']|["']$/g, '')  // strip surrounding quotes (Coolify adds these)
-    .replace(/\\n/g, '\n')        // convert literal \n to real newlines
-    .trim();                       // remove leading/trailing whitespace
-}
-
 function validateEnvVars(): { projectId: string; clientEmail: string; privateKey: string } {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY);
+
+  const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY || '';
+
+  const privateKey = rawPrivateKey
+    .replace(/^"/, '')       // remove leading double-quote
+    .replace(/"$/, '')       // remove trailing double-quote
+    .replace(/\\"/g, '"')   // unescape escaped double-quotes
+    .replace(/\\n/g, '\n')  // convert literal \n to real newlines
+    .trim();
+
+  console.log('[FirebaseAdmin] Key diagnostics', {
+    hasKey: !!privateKey,
+    length: privateKey.length,
+    prefix: privateKey.substring(0, 30),
+  });
 
   if (!projectId) {
     console.error('[FirebaseAdmin] FATAL: Missing FIREBASE_PROJECT_ID');
