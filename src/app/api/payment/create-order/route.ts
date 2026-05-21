@@ -13,20 +13,19 @@ function getRazorpay() {
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      return NextResponse.json(
-        { error: 'Payment gateway is not configured. Please contact support.' },
-        { status: 503 },
-      );
-    }
-
     const { planId, amount, currency = 'INR', userId } = await request.json();
 
     if (!planId || !amount || !userId) {
       return NextResponse.json({ error: 'planId, amount, and userId are required' }, { status: 400 });
     }
 
-    const razorpay = getRazorpay()!;
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      return NextResponse.json(
+        { error: 'Payment gateway is not configured. Please contact support.' },
+        { status: 503 },
+      );
+    }
     const order = await razorpay.orders.create({
       amount, // in paise
       currency,

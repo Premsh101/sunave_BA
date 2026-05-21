@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { Check, CreditCard, ExternalLink } from 'lucide-react';
 import Card from '@/components/ui/Card';
@@ -28,6 +29,7 @@ function formatPrice(paise: number): string {
 
 export default function BillingPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const currentPlan = user?.plan || 'free';
   const [payingPlanId, setPayingPlanId] = useState<string | null>(null);
   const [payError, setPayError] = useState('');
@@ -80,7 +82,8 @@ export default function BillingPage() {
                 updatedAt: new Date().toISOString(),
               });
             }
-            window.location.reload();
+            setPayingPlanId(null);
+            router.refresh();
           } catch (err: any) {
             setPayError(err.message || 'Payment verification failed. Contact support.');
           }

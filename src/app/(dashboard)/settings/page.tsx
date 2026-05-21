@@ -381,7 +381,7 @@ export default function SettingsPage() {
                 )}
 
                 <div>
-                  <label style={labelStyle}>{isGoogleOnly ? 'New Password' : 'New Password'}</label>
+                  <label style={labelStyle}>New Password</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type={showNewPw ? 'text' : 'password'}
