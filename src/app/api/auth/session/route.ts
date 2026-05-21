@@ -5,6 +5,25 @@ const FIVE_DAYS_SECONDS = 60 * 60 * 24 * 5;
 const FIVE_DAYS_MS = FIVE_DAYS_SECONDS * 1000;
 const ONE_HOUR_SECONDS = 60 * 60;
 
+function getIdTokenMaxAgeSeconds(idToken: string): number {
+  try {
+    const parts = idToken.split('.');
+    if (parts.length < 2) return ONE_HOUR_SECONDS;
+
+    const payloadString = Buffer.from(parts[1], 'base64url').toString('utf8');
+    const payload = JSON.parse(payloadString) as { exp?: unknown };
+    if (typeof payload.exp !== 'number') return ONE_HOUR_SECONDS;
+
+    const now = Math.floor(Date.now() / 1000);
+    const remaining = payload.exp - now;
+    if (remaining <= 0) return 1;
+
+    return Math.min(remaining, ONE_HOUR_SECONDS);
+  } catch {
+    return ONE_HOUR_SECONDS;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
@@ -14,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'idToken is required' }, { status: 400 });
     }
 
-    let maxAgeSeconds = ONE_HOUR_SECONDS;
+    let maxAgeSeconds = getIdTokenMaxAgeSeconds(idToken);
     const hasFirebaseAdminEnv =
       Boolean(process.env.FIREBASE_PROJECT_ID) &&
       Boolean(process.env.FIREBASE_CLIENT_EMAIL) &&
