@@ -137,17 +137,34 @@ NEXT_PUBLIC_FIREBASE_APP_ID=<your-firebase-app-id>
 These are two distinct sets of credentials for two different services:
 
 ```
+# Option A — recommended: supply the entire service-account JSON as one variable
+FIREBASE_SERVICE_ACCOUNT_JSON=<compact single-line JSON — see note below>
+
+# Option B — individual fields (use only if Option A is not available)
 FIREBASE_PROJECT_ID=<your-firebase-project-id>
 FIREBASE_CLIENT_EMAIL=<your-firebase-service-account-client-email>
 FIREBASE_PRIVATE_KEY=<your-firebase-service-account-private-key>
+
 GOOGLE_APPLICATION_CREDENTIALS=<compact JSON of your GCP service account key — see note below>
 GOOGLE_CLOUD_PROJECT_ID=<your-gcp-project-id>
 ```
 
-> **Firebase Admin SDK** (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) — used by the Next.js API routes to verify session cookies and access Firestore server-side. Obtain these from Firebase Console → Project Settings → Service Accounts → Generate new private key.
+> **Firebase Admin SDK** — used by the Next.js API routes to verify session cookies and access Firestore server-side. Obtain the service account JSON from Firebase Console → Project Settings → Service Accounts → Generate new private key.
+>
+> **Option A (recommended) — `FIREBASE_SERVICE_ACCOUNT_JSON`**
+> Pass the *entire* downloaded JSON as a compact (single-line) string.  This avoids all newline-escaping issues that can corrupt the private key in some deployment environments.
+> ```bash
+> # Produce the compact single-line value:
+> cat your-service-account.json | python3 -c "import json,sys; print(json.dumps(json.load(sys.stdin)))"
+> # or using jq:
+> cat your-service-account.json | jq -c .
+> ```
+> Paste the entire single-line output as the `FIREBASE_SERVICE_ACCOUNT_JSON` value.
+>
+> **Option B — individual fields** (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`)
 > - `FIREBASE_PROJECT_ID` — the `project_id` field in the downloaded JSON
 > - `FIREBASE_CLIENT_EMAIL` — the `client_email` field in the downloaded JSON
-> - `FIREBASE_PRIVATE_KEY` — the `private_key` field in the downloaded JSON (include the full value with `\n` line breaks)
+> - `FIREBASE_PRIVATE_KEY` — the `private_key` field in the downloaded JSON.  You may paste the raw value including the surrounding `"` quotes; the app will strip them automatically.  If you copy the value from a JSON file, the `\n` escape sequences will be converted to real newlines automatically.
 >
 > **Google Cloud Speech-to-Text** (`GOOGLE_APPLICATION_CREDENTIALS`) — used by the custom server for real-time transcription via the Socket.IO stream. This is a separate GCP service account with Speech-to-Text API enabled.
 > ```bash
@@ -271,9 +288,10 @@ Using port `3010` avoids conflict with any other apps deployed on the same Cooli
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | ✅ | No | Firebase storage bucket |
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | ✅ | No | Firebase messaging sender ID |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | ✅ | No | Firebase app ID |
-| `FIREBASE_PROJECT_ID` | ✅ | **Yes** | Firebase project ID (server-side Admin SDK) |
-| `FIREBASE_CLIENT_EMAIL` | ✅ | **Yes** | Firebase service account client email |
-| `FIREBASE_PRIVATE_KEY` | ✅ | **Yes** | Firebase service account private key |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | ✅* | **Yes** | Full service-account JSON as compact string (recommended; replaces the three fields below) |
+| `FIREBASE_PROJECT_ID` | ✅* | **Yes** | Firebase project ID — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
+| `FIREBASE_CLIENT_EMAIL` | ✅* | **Yes** | Firebase service account client email — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
+| `FIREBASE_PRIVATE_KEY` | ✅* | **Yes** | Firebase service account private key — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
 | `GOOGLE_APPLICATION_CREDENTIALS` | ✅ | **Yes** | GCP service account JSON (compact) |
 | `GOOGLE_CLOUD_PROJECT_ID` | ✅ | **Yes** | GCP project ID |
 | `GEMINI_API_KEY` | ✅ | **Yes** | Google Generative AI key |
