@@ -15,16 +15,33 @@ function getAdminApp(): App {
 
   if (getApps().length > 0) {
     adminAppInstance = getApps()[0];
+    console.log('[FirebaseAdmin] Reusing existing app instance');
     return adminAppInstance;
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  // Handle Coolify/Docker env var formats:
+  // 1. Literal \n sequences (common in .env files and many CI/CD systems)
+  // 2. Surrounding quotes (Coolify wraps values in double-quotes)
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY
+    ?.replace(/\\n/g, '\n')
+    ?.replace(/^"|"$/g, '');
 
-  if (!projectId || !clientEmail || !privateKey) {
-    throw new Error('Missing Firebase Admin environment variables');
+  if (!projectId) {
+    console.error('[FirebaseAdmin] Missing FIREBASE_PROJECT_ID');
+    throw new Error('Missing Firebase Admin environment variable: FIREBASE_PROJECT_ID');
   }
+  if (!clientEmail) {
+    console.error('[FirebaseAdmin] Missing FIREBASE_CLIENT_EMAIL');
+    throw new Error('Missing Firebase Admin environment variable: FIREBASE_CLIENT_EMAIL');
+  }
+  if (!privateKey) {
+    console.error('[FirebaseAdmin] Missing FIREBASE_PRIVATE_KEY');
+    throw new Error('Missing Firebase Admin environment variable: FIREBASE_PRIVATE_KEY');
+  }
+
+  console.log('[FirebaseAdmin] Initializing app', { projectId, clientEmail });
 
   adminAppInstance = initializeApp({
     credential: cert({
@@ -34,11 +51,13 @@ function getAdminApp(): App {
     }),
   });
 
+  console.log('[FirebaseAdmin] App initialized successfully');
   return adminAppInstance;
 }
 
 export function getAdminAuth(): Auth {
   if (!adminAuthInstance) {
+    console.log('[FirebaseAdmin] Creating Auth instance');
     adminAuthInstance = getAuth(getAdminApp());
   }
   return adminAuthInstance;
@@ -46,6 +65,7 @@ export function getAdminAuth(): Auth {
 
 export function getAdminDb(): Firestore {
   if (!adminDbInstance) {
+    console.log('[FirebaseAdmin] Creating Firestore instance');
     adminDbInstance = getFirestore(getAdminApp());
   }
   return adminDbInstance;
