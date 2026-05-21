@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import { adminAuth } from '@/lib/firebase/admin';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 
 const FIVE_DAYS_SECONDS = 60 * 60 * 24 * 5;
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     let decodedToken: DecodedIdToken;
     try {
-      decodedToken = await getAdminAuth().verifyIdToken(idToken);
+      decodedToken = await adminAuth.verifyIdToken(idToken);
       console.log('[Session] ID token verified for uid:', decodedToken.uid);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     let sessionCookie: string;
     try {
-      sessionCookie = await getAdminAuth().createSessionCookie(idToken, { expiresIn: FIVE_DAYS_MS });
+      sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn: FIVE_DAYS_MS });
       console.log('[Session] Session cookie created for uid:', decodedToken.uid);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
