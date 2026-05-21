@@ -8,7 +8,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, deleteUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { colors, typography, semantic } from '@/styles/theme';
 import { flexCenter } from '@/styles/mixins';
@@ -45,7 +45,11 @@ export default function Signup() {
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       if (name.trim()) {
-        await updateProfile(credential.user, { displayName: name.trim() });
+        try {
+          await updateProfile(credential.user, { displayName: name.trim() });
+        } catch {
+          // Non-critical: account is created even if display name update fails
+        }
       }
       const idToken = await credential.user.getIdToken();
       const sessionRes = await fetch('/api/auth/session', {
@@ -54,6 +58,8 @@ export default function Signup() {
         body: JSON.stringify({ idToken }),
       });
       if (!sessionRes.ok) {
+        // Delete the newly created account to avoid orphaned accounts
+        await deleteUser(credential.user).catch(() => {});
         throw new Error('Failed to create session. Please try again.');
       }
       router.push('/dashboard');
@@ -136,6 +142,7 @@ export default function Signup() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               icon={<User size={18} />}
+              autoComplete="name"
             />
             <Input
               type="email"
