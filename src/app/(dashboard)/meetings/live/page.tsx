@@ -40,7 +40,7 @@ export default function LiveMeeting() {
           <h1 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>New Live Meeting</h1>
           {isRecording ? (
             <Badge variant="danger" icon={<div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }} />}>
-              Recording Live
+              Transcribing Live
             </Badge>
           ) : (
             <Badge variant="neutral">Ready</Badge>
@@ -100,9 +100,9 @@ export default function LiveMeeting() {
               <div style={{ width: 64, height: 64, borderRadius: 16, background: semantic.bg.brandSubtle, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Mic size={32} color={colors.brand[400]} />
               </div>
-              <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>Start Bot-Free Transcription</h2>
+          <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>Start Transcription</h2>
               <p style={{ color: semantic.text.secondary, marginBottom: '2rem' }}>
-                Capture audio directly from your browser. Perfect for Google Meet, Teams, or Zoom when bots aren't allowed.
+                Capture audio directly from your browser. Perfect for Google Meet, Teams, or Zoom — no bots required.
               </p>
             </div>
           )}
