@@ -138,7 +138,7 @@ export default function BlogPage() {
             marginBottom: '1rem',
             letterSpacing: typography.letterSpacing.tighter,
           }}>
-            Ideas, updates &amp;{' '}
+            Ideas, updates &{' '}
             <span style={gradientText()}>insights</span>
           </h1>
           <p style={{ fontSize: typography.fontSize.xl, color: semantic.text.secondary, maxWidth: '580px', margin: '0 auto 2.5rem' }}>

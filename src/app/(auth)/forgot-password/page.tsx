@@ -33,10 +33,10 @@ export default function ForgotPasswordPage() {
     try {
       await sendPasswordResetEmail(auth, email.trim());
       setStatus('success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Avoid leaking whether an email is registered — show a generic message
       // for all Firebase errors except network failures.
-      const code: string = err?.code ?? '';
+      const code = (err as { code?: string })?.code ?? '';
       if (code === 'auth/network-request-failed') {
         setErrorMsg('Network error. Please check your connection and try again.');
       } else {

@@ -101,8 +101,4 @@ export function getAdminDb(): Firestore {
 }
 
 // Convenience re-export so callers can use `adminAuth` directly
-export const adminAuth = {
-  get instance(): Auth {
-    return getAdminAuth();
-  },
-};
+export const adminAuth = getAdminAuth;
