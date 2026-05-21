@@ -133,12 +133,23 @@ NEXT_PUBLIC_FIREBASE_APP_ID=<your-firebase-app-id>
 ```
 
 ### Firebase Admin SDK & Google Cloud (Secret)
+
+These are two distinct sets of credentials for two different services:
+
 ```
+FIREBASE_PROJECT_ID=<your-firebase-project-id>
+FIREBASE_CLIENT_EMAIL=<your-firebase-service-account-client-email>
+FIREBASE_PRIVATE_KEY=<your-firebase-service-account-private-key>
 GOOGLE_APPLICATION_CREDENTIALS=<compact JSON of your GCP service account key — see note below>
 GOOGLE_CLOUD_PROJECT_ID=<your-gcp-project-id>
 ```
 
-> **How to get the compact JSON string for `GOOGLE_APPLICATION_CREDENTIALS`:**
+> **Firebase Admin SDK** (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`) — used by the Next.js API routes to verify session cookies and access Firestore server-side. Obtain these from Firebase Console → Project Settings → Service Accounts → Generate new private key.
+> - `FIREBASE_PROJECT_ID` — the `project_id` field in the downloaded JSON
+> - `FIREBASE_CLIENT_EMAIL` — the `client_email` field in the downloaded JSON
+> - `FIREBASE_PRIVATE_KEY` — the `private_key` field in the downloaded JSON (include the full value with `\n` line breaks)
+>
+> **Google Cloud Speech-to-Text** (`GOOGLE_APPLICATION_CREDENTIALS`) — used by the custom server for real-time transcription via the Socket.IO stream. This is a separate GCP service account with Speech-to-Text API enabled.
 > ```bash
 > cat your-service-account-key.json | jq -c .
 > ```
@@ -260,6 +271,9 @@ Using port `3010` avoids conflict with any other apps deployed on the same Cooli
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | ✅ | No | Firebase storage bucket |
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | ✅ | No | Firebase messaging sender ID |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | ✅ | No | Firebase app ID |
+| `FIREBASE_PROJECT_ID` | ✅ | **Yes** | Firebase project ID (server-side Admin SDK) |
+| `FIREBASE_CLIENT_EMAIL` | ✅ | **Yes** | Firebase service account client email |
+| `FIREBASE_PRIVATE_KEY` | ✅ | **Yes** | Firebase service account private key |
 | `GOOGLE_APPLICATION_CREDENTIALS` | ✅ | **Yes** | GCP service account JSON (compact) |
 | `GOOGLE_CLOUD_PROJECT_ID` | ✅ | **Yes** | GCP project ID |
 | `GEMINI_API_KEY` | ✅ | **Yes** | Google Generative AI key |
