@@ -68,9 +68,9 @@ export function useTranscription(language = 'en-US') {
       const audioContext = new window.AudioContext({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
 
-      // Guard: ensure the stream actually has at least one audio track before
-      // connecting it to the AudioContext (mic path should always have one, but
-      // this prevents a crash in unusual browser/device configurations).
+      // Secondary guard for the mic path: getUserMedia should always return an
+      // audio track on success, but some browser extensions or virtual audio
+      // devices can silently strip audio tracks after the promise resolves.
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) {
         audioContext.close();
