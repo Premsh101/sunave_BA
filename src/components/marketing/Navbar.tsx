@@ -9,9 +9,9 @@ import { gradients, borderRadius, typography, transitions, shadows, semantic, zI
 
 const navLinks = [
   { label: 'Features', href: '/features' },
-  { label: 'Solutions', href: '/enterprise' },
-  { label: 'Docs', href: '/docs' },
+  { label: 'Pricing', href: '/pricing' },
   { label: 'Security', href: '/security' },
+  { label: 'Blog', href: '/blog' },
 ];
 
 export default function Navbar() {
@@ -155,9 +155,9 @@ export default function Navbar() {
             <Link href="/login">
               <Button variant="ghost" size="sm">Log in</Button>
             </Link>
-            <Link href="/contact">
+            <Link href="/signup">
               <Button variant="primary" size="sm" icon={<Zap size={14} />}>
-                Enterprise Demo
+                Start Free
               </Button>
             </Link>
           </div>
@@ -204,8 +204,8 @@ export default function Navbar() {
             <Link href="/login" onClick={() => setMobileOpen(false)}>
               <Button variant="secondary" fullWidth>Log in</Button>
             </Link>
-            <Link href="/contact" onClick={() => setMobileOpen(false)}>
-              <Button variant="primary" fullWidth icon={<Zap size={14} />}>Enterprise Demo</Button>
+            <Link href="/signup" onClick={() => setMobileOpen(false)}>
+              <Button variant="primary" fullWidth icon={<Zap size={14} />}>Start Free</Button>
             </Link>
           </div>
         </div>

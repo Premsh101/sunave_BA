@@ -2,13 +2,13 @@
 
 import React, { useEffect, useRef, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Play, Mic, ChevronDown } from 'lucide-react';
+import { ArrowRight, Video, ChevronDown, FileText, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { typography, semantic, spacing, colors, borderRadius, gradients } from '@/styles/theme';
 import { container, flexColumn } from '@/styles/mixins';
 import animations from '@/styles/animations';
-import AudioSandbox from '@/components/marketing/AudioSandbox';
+import MeetingDemoWidget from '@/components/marketing/MeetingDemoWidget';
 
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
@@ -93,19 +93,19 @@ export default function Hero() {
       <div style={{ ...container, ...flexColumn, alignItems: 'center', position: 'relative', zIndex: 1 }}>
 
         <div style={{ animation: animations.fadeInUp(0), marginBottom: spacing[6] }}>
-          <Badge variant="brand" icon={<Mic size={12} />}>
-            Production-ready enterprise voicebots
+          <Badge variant="brand" icon={<Sparkles size={12} />}>
+            AI-powered meeting intelligence
           </Badge>
         </div>
 
         <h1 style={titleStyle}>
-          Enterprise Voice Automation<br />
-          at <span style={gradientTextStyle}>Sub-500ms Latency.</span>
+          Turn Every Meeting Into<br />
+          <span style={gradientTextStyle}>Actionable Documents.</span>
         </h1>
 
         <p style={subtitleStyle}>
-          Deploy reliable, production-ready voicebots for instant candidate recruitment onboarding
-          and high-scale small business verification.
+          Transcribe meetings live — no bots, no interruptions. Then instantly generate
+          BRDs, MOMs, User Stories, PRDs and more with AI, straight from your transcript.
         </p>
 
         <div style={buttonGroupStyle}>
@@ -116,25 +116,33 @@ export default function Hero() {
               iconRight={<ArrowRight size={18} />}
               style={{ boxShadow: '0 0 32px rgba(6,182,212,0.35), 0 0 64px rgba(99,102,241,0.2)' }}
             >
-              Build an Agent
+              Start for Free
             </Button>
           </Link>
-          <Button variant="secondary" size="lg" icon={<Play size={18} />}>
-            Watch System Architecture
-          </Button>
+          <Link href="/features">
+            <Button variant="secondary" size="lg" icon={<Video size={18} />}>
+              See How It Works
+            </Button>
+          </Link>
         </div>
 
-        {/* Live status indicator */}
-        <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.625rem', animation: animations.fadeInUp(0.45) }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.success[400], display: 'inline-block', animation: animations.pulse(2) }} />
-          <span style={{ fontSize: typography.fontSize.sm, color: semantic.text.muted, letterSpacing: '0.03em' }}>
-            All systems operational · avg latency <span style={{ color: colors.accent[400], fontWeight: 600 }}>312ms</span>
-          </span>
+        {/* Trust indicators */}
+        <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', animation: animations.fadeInUp(0.45) }}>
+          {[
+            { icon: <Video size={13} />, text: 'Bot-free transcription' },
+            { icon: <FileText size={13} />, text: 'Instant AI documents' },
+            { icon: <Sparkles size={13} />, text: 'No credit card required' },
+          ].map((item) => (
+            <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: typography.fontSize.sm, color: semantic.text.muted }}>
+              <span style={{ color: colors.accent[400] }}>{item.icon}</span>
+              {item.text}
+            </div>
+          ))}
         </div>
 
-        {/* Audio Sandbox */}
+        {/* Meeting Demo Widget */}
         <div style={{ marginTop: '5rem', width: '100%', maxWidth: '1080px', animation: animations.fadeInUp(0.55) }}>
-          <AudioSandbox />
+          <MeetingDemoWidget />
         </div>
 
         {/* Scroll hint */}

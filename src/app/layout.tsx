@@ -1,3 +1,4 @@
+import './globals.css';
 import { AuthProvider } from '@/features/auth/AuthContext';
 import { ThemeProvider } from '@/features/theme/ThemeContext';
 
