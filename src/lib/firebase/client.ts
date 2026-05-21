@@ -12,7 +12,25 @@ const firebaseEnv = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const hasAllFirebaseEnvVars = Object.values(firebaseEnv).every((value): value is string => Boolean(value));
+const FIREBASE_ENV_VAR_NAMES: Record<keyof typeof firebaseEnv, string> = {
+  apiKey: 'NEXT_PUBLIC_FIREBASE_API_KEY',
+  authDomain: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  projectId: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  storageBucket: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  messagingSenderId: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  appId: 'NEXT_PUBLIC_FIREBASE_APP_ID',
+};
+
+const missingVars = (Object.keys(firebaseEnv) as Array<keyof typeof firebaseEnv>)
+  .filter((k) => !firebaseEnv[k])
+  .map((k) => FIREBASE_ENV_VAR_NAMES[k]);
+
+const hasAllFirebaseEnvVars = missingVars.length === 0;
+
+if (!hasAllFirebaseEnvVars && typeof window !== 'undefined') {
+  console.warn('[FirebaseClient] Missing env vars — Firebase client SDK not initialized:', missingVars);
+}
+
 const firebaseConfig: FirebaseOptions | null = hasAllFirebaseEnvVars ? firebaseEnv : null;
 
 // Initialize Firebase (singleton) only when public config is available.
