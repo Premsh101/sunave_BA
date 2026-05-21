@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Monitor, Square, Play, Pause, Save, Languages, Volume2, UserCircle } from 'lucide-react';
+import { Mic, Monitor, Square, Save, Languages, Volume2, UserCircle } from 'lucide-react';
 import { useTranscription } from '@/features/transcription/useTranscription';
 import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import GenerateDocumentModal from '@/components/ui/GenerateDocumentModal';
 import { typography, semantic, colors, shadows } from '@/styles/theme';
 
 export default function LiveMeeting() {
   const [language, setLanguage] = useState('en-US');
   const [mode, setMode] = useState<'bot-free' | 'ai-assistant'>('bot-free');
-  
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+
   const { isRecording, startRecording, stopRecording, transcript, interimTranscript, error } = useTranscription(language);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +24,11 @@ export default function LiveMeeting() {
 
   const handleStart = (captureMode: 'mic' | 'system') => {
     startRecording(captureMode);
+  };
+
+  const handleSaveAndGenerate = () => {
+    if (isRecording) stopRecording();
+    setShowGenerateModal(true);
   };
 
   return (
@@ -72,7 +78,13 @@ export default function LiveMeeting() {
             </select>
           </div>
           
-          <Button variant="primary" size="sm" icon={<Save size={16} />} disabled={!transcript && !interimTranscript}>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Save size={16} />}
+            disabled={!transcript && !interimTranscript}
+            onClick={handleSaveAndGenerate}
+          >
             Save & Generate
           </Button>
         </div>
@@ -153,6 +165,19 @@ export default function LiveMeeting() {
         </div>
         
       </div>
+
+      {/* Generate Document Modal */}
+      {showGenerateModal && (
+        <GenerateDocumentModal
+          preloadedTranscript={[transcript, interimTranscript].filter(Boolean).join(' ').trim()}
+          onClose={() => setShowGenerateModal(false)}
+          onGenerated={() => {
+            setShowGenerateModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
+
+

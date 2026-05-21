@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_PREFIXES = ['/dashboard', '/meetings', '/documents', '/template-studio'];
+const PROTECTED_PREFIXES = ['/dashboard', '/meetings', '/documents', '/template-studio', '/prompt-studio', '/settings', '/billing'];
 const AUTH_PATHS = ['/login', '/signup'];
 
 export async function middleware(request: NextRequest) {
@@ -35,6 +35,9 @@ export const config = {
     '/meetings/:path*',
     '/documents/:path*',
     '/template-studio/:path*',
+    '/prompt-studio/:path*',
+    '/settings/:path*',
+    '/billing/:path*',
     '/login',
     '/signup',
   ],

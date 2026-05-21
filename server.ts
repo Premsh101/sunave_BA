@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
 import { Server as SocketIOServer } from 'socket.io';
-import speech from '@google-cloud/speech';
+import speech, { SpeechClient } from '@google-cloud/speech';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || '0.0.0.0';
@@ -10,6 +10,34 @@ const port = parseInt(process.env.PORT || '3010', 10);
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
+
+// Build Google Speech client only when credentials are configured.
+// If GOOGLE_APPLICATION_CREDENTIALS contains a JSON string, parse it;
+// otherwise fall back to application-default credentials (local dev / GCE).
+function buildSpeechClient(): SpeechClient | null {
+  const rawCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (rawCreds) {
+    try {
+      const credentials = JSON.parse(rawCreds);
+      return new speech.SpeechClient({ credentials });
+    } catch {
+      // Not valid JSON — treat as a file path (ADC behaviour).
+      try {
+        return new speech.SpeechClient();
+      } catch (err) {
+        console.warn('[Speech] Could not create Speech client from credentials path:', err);
+        return null;
+      }
+    }
+  }
+  // No env var: try application-default credentials (e.g. gcloud auth on dev).
+  try {
+    return new speech.SpeechClient();
+  } catch (err) {
+    console.warn('[Speech] No Google credentials found — live transcription will be unavailable. Set GOOGLE_APPLICATION_CREDENTIALS to enable it.');
+    return null;
+  }
+}
 
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
@@ -28,17 +56,21 @@ app.prepare().then(() => {
     maxHttpBufferSize: 1e8 // 100 MB
   });
 
-  const speechClient = new speech.SpeechClient({
-    credentials: process.env.GOOGLE_APPLICATION_CREDENTIALS 
-      ? JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS) 
-      : undefined
-  });
+  const speechClient = buildSpeechClient();
+
+  if (!speechClient) {
+    console.warn('[Speech] Live transcription is disabled because Google Cloud credentials are not configured.');
+  }
 
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
     let recognizeStream: any = null;
 
     socket.on('startGoogleCloudStream', (config) => {
+      if (!speechClient) {
+        socket.emit('speechError', 'Speech transcription is not configured on this server. Please set GOOGLE_APPLICATION_CREDENTIALS.');
+        return;
+      }
       console.log('Starting Google Cloud Speech Stream');
       try {
         recognizeStream = speechClient
@@ -75,6 +107,7 @@ app.prepare().then(() => {
           });
       } catch (err) {
         console.error('Failed to initialize stream:', err);
+        socket.emit('speechError', 'Failed to start speech recognition stream.');
       }
     });
 
