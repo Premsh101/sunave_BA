@@ -4,9 +4,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Centralised model config — override via GEMINI_MODEL env var if needed.
-// gemini-1.5-flash is the stable, widely-available default.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-const GEMINI_FALLBACK_MODEL = 'gemini-1.5-flash';
+// gemini-2.0-flash is the stable, widely-available default.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const GEMINI_FALLBACK_MODEL = 'gemini-2.0-flash';
 
 const DOCUMENT_PROMPTS: Record<string, { title: string; sections: string }> = {
   brd: {
