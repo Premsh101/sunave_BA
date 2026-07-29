@@ -5,9 +5,15 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install dependencies based on the preferred package manager.
+# --include=dev is required here even though this is a "deps" stage: some
+# deployment platforms (e.g. Coolify) set NODE_ENV=production as a build-time
+# env var, which makes `npm ci` silently skip devDependencies — including
+# tailwindcss/@tailwindcss/postcss, which the `builder` stage's `npm run
+# build` needs. Explicitly including dev deps here makes the install
+# deterministic regardless of that ambient env var.
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Rebuild the source code only when needed
 FROM base AS builder
