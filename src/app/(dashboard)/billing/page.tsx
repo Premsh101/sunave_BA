@@ -5,14 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { Check, CreditCard, ExternalLink } from 'lucide-react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
-import { typography, semantic, colors, gradients } from '@/styles/theme';
 import { PLANS } from '@/types/billing';
 
 declare global {
@@ -104,153 +100,190 @@ export default function BillingPage() {
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      <div style={{ padding: '2rem 1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="px-4 md:px-8 pt-8 pb-12 max-w-[1100px] mx-auto">
+
         {/* Header */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: typography.fontSize['2xl'], fontWeight: 700, color: semantic.text.primary, marginBottom: '0.25rem' }}>
-            Billing & Plans
-          </h1>
-          <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-            Manage your subscription and billing details
-          </p>
+        <div className="mb-8">
+          <h2 className="text-2xl md:text-[32px] font-semibold text-app-fg mb-1">
+            Billing &amp; Plans
+          </h2>
+          <p className="text-app-fg-variant">Manage your subscription and billing details.</p>
         </div>
 
         {/* Current Plan Banner */}
-        <Card style={{ background: semantic.bg.secondary, marginBottom: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: semantic.bg.brandSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CreditCard size={20} color={colors.brand[400]} />
+        <div className="rounded-xl border border-app-outline bg-app-surface-low p-5 mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-app-primary-container/20 flex items-center justify-center shrink-0">
+              <CreditCard size={20} className="text-app-primary" />
             </div>
             <div>
-              <div style={{ fontSize: typography.fontSize.sm, color: semantic.text.muted }}>Current Plan</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-                <span style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>
+              <div className="text-xs font-semibold uppercase tracking-wider text-app-outline-strong">
+                Current Plan
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-lg font-semibold text-app-fg">
                   {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
                 </span>
-                <Badge variant={currentPlan === 'free' ? 'neutral' : 'brand'}>
+                <span
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+                    currentPlan === 'free'
+                      ? 'bg-app-surface-highest text-app-fg-variant border-app-outline'
+                      : 'bg-app-primary/10 text-app-primary border-app-primary/20'
+                  }`}
+                >
                   {currentPlan === 'free' ? 'Free' : 'Active'}
-                </Badge>
+                </span>
               </div>
             </div>
           </div>
           {currentPlan === 'free' && (
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <Badge variant="warning">5 meetings/month</Badge>
-              <Badge variant="warning">3 AI docs/month</Badge>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-app-tertiary/10 text-app-tertiary border-app-tertiary/20">
+                5 meetings/month
+              </span>
+              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border bg-app-tertiary/10 text-app-tertiary border-app-tertiary/20">
+                3 AI docs/month
+              </span>
             </div>
           )}
-        </Card>
+        </div>
 
         {payError && (
-          <div style={{ marginBottom: '1.5rem', padding: '0.875rem 1.25rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: semantic.text.danger, fontSize: typography.fontSize.sm }}>
+          <div className="mb-6 px-5 py-3.5 rounded-lg border border-app-error/30 bg-app-error/10 text-app-error text-sm">
             {payError}
           </div>
         )}
 
         {/* Plans */}
-        <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary, marginBottom: '1.5rem' }}>
-          Available Plans
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+        <h3 className="text-lg font-semibold text-app-fg mb-6">Available Plans</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
           {PLANS.map((plan) => {
             const isCurrent = plan.tier === currentPlan;
             const isPayingThis = payingPlanId === plan.id;
             return (
-              <Card
+              <div
                 key={plan.id}
-                variant={plan.isPopular ? 'gradient' : 'elevated'}
-                style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+                className={`relative flex flex-col rounded-xl border p-6 ${
+                  plan.isPopular
+                    ? 'border-app-primary/60 bg-app-surface shadow-[0_0_40px_rgba(128,131,255,0.12)]'
+                    : 'border-app-outline bg-app-surface-low'
+                }`}
               >
                 {plan.isPopular && (
-                  <div style={{
-                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                    background: colors.brand[500], color: '#fff', padding: '3px 14px',
-                    borderRadius: '999px', fontSize: typography.fontSize.xs, fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                  }}>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-action text-white px-3.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap tracking-wider">
                     MOST POPULAR
                   </div>
                 )}
 
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h3 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: plan.isPopular ? '#fff' : semantic.text.primary }}>
-                      {plan.name}
-                    </h3>
-                    {isCurrent && <Badge variant="success">Current</Badge>}
-                  </div>
-                  <div style={{ marginTop: '0.75rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                    <span style={{ fontSize: typography.fontSize['3xl'], fontWeight: 700, color: plan.isPopular ? '#fff' : semantic.text.primary }}>
-                      {formatPrice(plan.priceMonthly)}
-                    </span>
-                    {plan.priceMonthly >= 0 && plan.priceMonthly > 0 && (
-                      <span style={{ color: plan.isPopular ? 'rgba(255,255,255,0.7)' : semantic.text.muted, fontSize: typography.fontSize.sm }}>/mo</span>
+                <div className="mb-5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xl font-semibold text-app-fg">{plan.name}</h4>
+                    {isCurrent && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-app-primary/10 text-app-primary border-app-primary/20">
+                        Current
+                      </span>
                     )}
                   </div>
-                  <p style={{ fontSize: typography.fontSize.sm, color: plan.isPopular ? 'rgba(255,255,255,0.75)' : semantic.text.secondary }}>
-                    {plan.description}
-                  </p>
+                  <div className="mt-3 mb-1 flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-app-fg">
+                      {formatPrice(plan.priceMonthly)}
+                    </span>
+                    {plan.priceMonthly > 0 && (
+                      <span className="text-sm text-app-outline-strong">/mo</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-app-fg-variant">{plan.description}</p>
                 </div>
 
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.625rem', marginBottom: '1.5rem' }}>
+                <div className="flex-1 flex flex-col gap-2.5 mb-6">
                   {plan.features.map((feature) => (
-                    <div key={feature.name} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                      <Check size={15} color={plan.isPopular ? '#fff' : feature.included ? colors.success[400] : semantic.text.muted} style={{ flexShrink: 0 }} />
-                      <span style={{ fontSize: typography.fontSize.sm, color: plan.isPopular ? (feature.included ? '#fff' : 'rgba(255,255,255,0.5)') : (feature.included ? semantic.text.primary : semantic.text.muted) }}>
+                    <div key={feature.name} className="flex items-center gap-2.5">
+                      <Check
+                        size={15}
+                        className={`shrink-0 ${
+                          feature.included ? 'text-app-primary' : 'text-app-outline-strong'
+                        }`}
+                      />
+                      <span
+                        className={`text-sm ${
+                          feature.included ? 'text-app-fg' : 'text-app-outline-strong'
+                        }`}
+                      >
                         {feature.name}
-                        {feature.detail && <span style={{ color: plan.isPopular ? 'rgba(255,255,255,0.6)' : semantic.text.muted }}> — {feature.detail}</span>}
+                        {feature.detail && (
+                          <span className="text-app-outline-strong"> — {feature.detail}</span>
+                        )}
                       </span>
                     </div>
                   ))}
                 </div>
 
                 {isCurrent ? (
-                  <Button variant="secondary" fullWidth disabled>Current Plan</Button>
+                  <button
+                    disabled
+                    className="w-full rounded-lg bg-app-surface-highest text-app-fg-variant text-sm font-semibold py-2.5 cursor-not-allowed"
+                  >
+                    Current Plan
+                  </button>
                 ) : plan.tier === 'enterprise' ? (
-                  <Link href="/enterprise">
-                    <Button variant={plan.isPopular ? 'primary' : 'secondary'} fullWidth iconRight={<ExternalLink size={14} />}>
-                      Contact Sales
-                    </Button>
+                  <Link
+                    href="/enterprise"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-app-outline text-app-fg text-sm font-semibold py-2.5 hover:border-app-primary/40 hover:text-app-primary transition-colors"
+                  >
+                    Contact Sales
+                    <ExternalLink size={14} />
                   </Link>
                 ) : (
-                  <Button
-                    variant={plan.isPopular ? 'primary' : 'secondary'}
-                    fullWidth
-                    loading={isPayingThis}
+                  <button
                     onClick={() => handleUpgrade(plan.id, plan.name, plan.priceMonthly)}
+                    disabled={isPayingThis}
+                    className={`w-full rounded-lg text-sm font-semibold py-2.5 transition-colors ${
+                      plan.isPopular
+                        ? 'bg-action hover:bg-action-hover text-white disabled:opacity-60'
+                        : 'border border-app-outline text-app-fg hover:border-app-primary/40 hover:text-app-primary disabled:opacity-60'
+                    }`}
                   >
-                    {currentPlan === 'free' ? `Upgrade to ${plan.name}` : 'Switch Plan'}
-                  </Button>
+                    {isPayingThis
+                      ? 'Processing…'
+                      : currentPlan === 'free'
+                        ? `Upgrade to ${plan.name}`
+                        : 'Switch Plan'}
+                  </button>
                 )}
-              </Card>
+              </div>
             );
           })}
         </div>
 
         {/* Usage Summary */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary, marginBottom: '1.25rem' }}>
-            Usage This Month
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-app-fg mb-5">Usage This Month</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { label: 'Meetings', used: user?.usage?.meetingsThisMonth ?? 0, limit: currentPlan === 'free' ? 5 : -1 },
               { label: 'AI Documents', used: user?.usage?.documentsGenerated ?? 0, limit: currentPlan === 'free' ? 3 : -1 },
               { label: 'Transcription Minutes', used: user?.usage?.transcriptionMinutes ?? 0, limit: currentPlan === 'free' ? 300 : -1 },
             ].map(({ label, used, limit }) => (
-              <Card key={label} style={{ background: semantic.bg.secondary }}>
-                <div style={{ fontSize: typography.fontSize.sm, color: semantic.text.secondary, marginBottom: '0.5rem' }}>{label}</div>
-                <div style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>
+              <div key={label} className="rounded-xl border border-app-outline bg-app-surface-low p-4">
+                <div className="text-sm text-app-fg-variant mb-2">{label}</div>
+                <div className="text-xl font-semibold text-app-fg mb-2">
                   {used}
-                  {limit > 0 && <span style={{ fontSize: typography.fontSize.sm, fontWeight: 400, color: semantic.text.muted }}> / {limit}</span>}
-                  {limit === -1 && <span style={{ fontSize: typography.fontSize.sm, fontWeight: 400, color: semantic.text.muted }}> / ∞</span>}
+                  {limit > 0 && (
+                    <span className="text-sm font-normal text-app-outline-strong"> / {limit}</span>
+                  )}
+                  {limit === -1 && (
+                    <span className="text-sm font-normal text-app-outline-strong"> / ∞</span>
+                  )}
                 </div>
                 {limit > 0 && (
-                  <div style={{ width: '100%', height: 4, background: semantic.bg.tertiary, borderRadius: 2, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.min(100, (used / limit) * 100)}%`, height: '100%', background: used >= limit ? colors.danger[500] : gradients.brand }} />
+                  <div className="w-full h-1 rounded-full bg-app-surface-highest overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${used >= limit ? 'bg-app-error' : 'bg-app-primary-container'}`}
+                      style={{ width: `${Math.min(100, (used / limit) * 100)}%` }}
+                    />
                   </div>
                 )}
-              </Card>
+              </div>
             ))}
           </div>
         </div>

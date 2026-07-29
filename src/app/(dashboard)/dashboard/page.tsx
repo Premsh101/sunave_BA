@@ -7,13 +7,18 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
-import { Video, FileText, MessageSquare, Clock, LayoutTemplate, Plus } from 'lucide-react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import {
+  Calendar,
+  Clock,
+  CreditCard,
+  FileText,
+  LayoutTemplate,
+  Mic,
+  Plus,
+  Terminal,
+  Video,
+} from 'lucide-react';
 import GenerateDocumentModal from '@/components/ui/GenerateDocumentModal';
-import { typography, semantic, gradients, colors } from '@/styles/theme';
-import { grid } from '@/styles/mixins';
 import type { Meeting } from '@/types/meeting';
 import type { AIDocument } from '@/types/document';
 
@@ -28,13 +33,43 @@ function formatDuration(seconds?: number): string {
   return `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-const statusVariant: Record<string, 'success' | 'danger' | 'neutral' | 'warning' | 'brand'> = {
-  completed: 'success',
-  live: 'danger',
-  processing: 'warning',
-  scheduled: 'brand',
-  failed: 'neutral',
+const statusPill: Record<string, string> = {
+  completed: 'bg-app-primary/10 text-app-primary border-app-primary/20',
+  live: 'bg-app-error/10 text-app-error border-app-error/20',
+  processing: 'bg-app-tertiary/10 text-app-tertiary border-app-tertiary/20',
+  scheduled: 'bg-app-primary-container/20 text-app-primary border-app-primary-container/30',
+  failed: 'bg-app-surface-highest text-app-fg-variant border-app-outline',
 };
+
+const DOC_TYPE_LABELS: Record<string, string> = {
+  mom: 'Minutes of Meeting',
+  brd: 'Business Requirements',
+  frd: 'Functional Requirements',
+  'user-stories': 'User Stories',
+  'acceptance-criteria': 'Acceptance Criteria',
+  'sprint-tasks': 'Sprint Tasks',
+  'test-scenarios': 'Test Scenarios',
+  'action-items': 'Action Items',
+  'risks-dependencies': 'Risks & Dependencies',
+  'grooming-questions': 'Grooming Questions',
+  'follow-up-email': 'Follow-up Email',
+  'stakeholder-summary': 'Stakeholder Summary',
+  custom: 'Custom',
+};
+
+function MicroSegments({ ratio, colorClass }: { ratio: number; colorClass: string }) {
+  const filled = Math.min(5, Math.round(Math.min(1, Math.max(0, ratio)) * 5));
+  return (
+    <div className="flex gap-1 mt-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-1 flex-1 rounded-full ${i < filled ? colorClass : 'bg-app-surface-highest'}`}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function DashboardHome() {
   const { user } = useAuth();
@@ -71,189 +106,287 @@ export default function DashboardHome() {
   }, [user]);
 
   const isPro = user?.plan === 'pro' || user?.plan === 'enterprise';
+  const meetingsThisMonth = user?.usage?.meetingsThisMonth ?? 0;
+  const transcriptionMinutes = user?.usage?.transcriptionMinutes ?? 0;
+  const documentsGenerated = user?.usage?.documentsGenerated ?? 0;
+  const planLabel = ((user?.plan || 'free').charAt(0).toUpperCase() + (user?.plan || 'free').slice(1));
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="px-4 md:px-8 pt-8 pb-12 max-w-[1200px] mx-auto">
 
-      {/* Welcome Section */}
-      <div style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: typography.fontSize['3xl'], fontWeight: 700, color: semantic.text.primary, marginBottom: '0.5rem' }}>
-            Welcome back, {user?.displayName?.split(' ')[0] || 'User'} 👋
-          </h1>
-          <p style={{ color: semantic.text.secondary }}>
-            {recentMeetings.length > 0
-              ? `You have ${recentMeetings.length} recent meeting${recentMeetings.length > 1 ? 's' : ''}.`
-              : 'Start your first meeting to get going.'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/template-studio">
-            <Button variant="secondary" icon={<LayoutTemplate size={16} />}>
-              Templates
-            </Button>
-          </Link>
-          <Link href="/meetings/live">
-            <Button variant="primary" icon={<Video size={16} />}>
-              Start Meeting
-            </Button>
-          </Link>
-        </div>
+      {/* Welcome header */}
+      <div className="mb-12 md:mb-16">
+        <h2 className="font-display text-4xl md:text-[48px] leading-tight text-app-fg mb-1">
+          Welcome back, {user?.displayName?.split(' ')[0] || 'User'}
+        </h2>
+        <p className="text-lg text-app-fg-variant">
+          {recentMeetings.length > 0
+            ? `You have ${recentMeetings.length} recent meeting${recentMeetings.length > 1 ? 's' : ''}. Here is an overview of your activity.`
+            : 'Start your first meeting to get going.'}
+        </p>
       </div>
 
-      {/* Quick Actions */}
-      <div style={grid(3, '1.5rem')}>
-        <Link href="/meetings/live" style={{ textDecoration: 'none' }}>
-          <Card variant="gradient" hoverable style={{ display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'pointer' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              <Video size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, color: '#fff' }}>New Live Meeting</div>
-              <div style={{ fontSize: typography.fontSize.sm, color: 'rgba(255,255,255,0.7)' }}>Start bot-free transcription</div>
-            </div>
-          </Card>
-        </Link>
-
-        <Card
-          hoverable
-          style={{ display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'pointer' }}
-          onClick={() => setShowGenerateModal(true)}
+      {/* Bento grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
+        {/* Primary CTA */}
+        <Link
+          href="/meetings/live"
+          className="md:col-span-8 group relative overflow-hidden rounded-xl border border-app-outline bg-app-surface p-6 min-h-[240px] flex flex-col justify-between transition-colors hover:border-app-primary/40"
         >
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: semantic.bg.brandSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={20} color={colors.brand[400]} />
+          <div className="absolute inset-0 bg-gradient-to-br from-app-primary/10 via-transparent to-transparent pointer-events-none" />
+          <Mic
+            className="absolute -bottom-8 -right-8 text-app-primary opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300 pointer-events-none"
+            size={192}
+            strokeWidth={1}
+          />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-app-error opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-app-error" />
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-app-error">
+                Ready to record
+              </span>
+            </div>
+            <h3 className="text-2xl md:text-[32px] font-semibold text-app-fg mb-2">
+              Start Live Meeting
+            </h3>
+            <p className="text-app-fg-variant max-w-md">
+              Begin real-time transcription, insights extraction, and automated note-taking.
+            </p>
           </div>
-          <div>
-            <div style={{ fontWeight: 600, color: semantic.text.primary }}>Generate Document</div>
-            <div style={{ fontSize: typography.fontSize.sm, color: semantic.text.secondary }}>BRD, MOM, User Stories & more</div>
+          <div className="relative mt-6">
+            <span className="inline-flex items-center gap-2 bg-action group-hover:bg-action-hover text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+              <Mic size={16} />
+              Initialize Session
+            </span>
           </div>
-        </Card>
+        </Link>
 
-        <Link href="/prompt-studio" style={{ textDecoration: 'none' }}>
-          <Card hoverable style={{ display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'pointer' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: semantic.bg.tertiary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: semantic.text.primary }}>
-              <MessageSquare size={20} color={semantic.text.secondary} />
+        {/* Stat tiles */}
+        <div className="md:col-span-4 flex flex-col gap-6">
+          <div className="flex-1 rounded-xl border border-app-outline bg-app-surface-low p-4 flex flex-col justify-center">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                Meetings
+              </span>
+              <Calendar size={16} className="text-app-primary" />
             </div>
-            <div>
-              <div style={{ fontWeight: 600, color: semantic.text.primary }}>Prompt Studio</div>
-              <div style={{ fontSize: typography.fontSize.sm, color: semantic.text.secondary }}>View AI prompt configurations</div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-app-fg">{meetingsThisMonth}</span>
+              <span className="text-sm text-app-outline-strong">this month</span>
             </div>
-          </Card>
+            <MicroSegments
+              ratio={isPro ? 0.15 : meetingsThisMonth / 5}
+              colorClass="bg-app-primary"
+            />
+          </div>
+          <div className="flex-1 rounded-xl border border-app-outline bg-app-surface-low p-4 flex flex-col justify-center">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                Transcribed
+              </span>
+              <Clock size={16} className="text-app-tertiary" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-app-fg">{transcriptionMinutes}</span>
+              <span className="text-sm text-app-outline-strong">mins</span>
+            </div>
+            <MicroSegments
+              ratio={isPro ? 0.1 : transcriptionMinutes / 300}
+              colorClass="bg-app-tertiary"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 md:mb-16">
+        <button
+          onClick={() => setShowGenerateModal(true)}
+          className="text-left rounded-xl border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface hover:border-app-primary/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-lg bg-app-primary-container/20 flex items-center justify-center mb-3">
+            <FileText size={17} className="text-app-primary" />
+          </div>
+          <div className="text-sm font-semibold text-app-fg">Generate Document</div>
+          <div className="text-xs text-app-fg-variant mt-0.5">BRD, MOM, User Stories &amp; more</div>
+        </button>
+        <Link
+          href="/template-studio"
+          className="rounded-xl border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface hover:border-app-primary/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-lg bg-app-primary-container/20 flex items-center justify-center mb-3">
+            <LayoutTemplate size={17} className="text-app-primary" />
+          </div>
+          <div className="text-sm font-semibold text-app-fg">Templates</div>
+          <div className="text-xs text-app-fg-variant mt-0.5">Design document templates</div>
+        </Link>
+        <Link
+          href="/prompt-studio"
+          className="rounded-xl border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface hover:border-app-primary/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-lg bg-app-primary-container/20 flex items-center justify-center mb-3">
+            <Terminal size={17} className="text-app-primary" />
+          </div>
+          <div className="text-sm font-semibold text-app-fg">Prompt Studio</div>
+          <div className="text-xs text-app-fg-variant mt-0.5">View AI prompt configurations</div>
+        </Link>
+        <Link
+          href="/billing"
+          className="rounded-xl border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface hover:border-app-primary/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-lg bg-app-primary-container/20 flex items-center justify-center mb-3">
+            <CreditCard size={17} className="text-app-primary" />
+          </div>
+          <div className="text-sm font-semibold text-app-fg">Billing &amp; Plans</div>
+          <div className="text-xs text-app-fg-variant mt-0.5">
+            {planLabel} plan • {documentsGenerated}/{isPro ? '∞' : '3'} AI docs used
+          </div>
         </Link>
       </div>
 
-      <div style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+      {/* Two-column lists */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 
         {/* Recent Meetings */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Recent Meetings</h2>
-            <Link href="/meetings" style={{ fontSize: typography.fontSize.sm, color: semantic.text.brand, textDecoration: 'none' }}>View all</Link>
+        <section>
+          <div className="flex items-center justify-between border-b border-app-outline/40 pb-3 mb-4">
+            <h3 className="text-xl font-semibold text-app-fg">Recent Meetings</h3>
+            <Link
+              href="/meetings"
+              className="text-sm font-medium text-app-primary hover:text-app-fg transition-colors"
+            >
+              View All
+            </Link>
           </div>
 
           {loadingMeetings ? (
-            <Card style={{ padding: '2rem', textAlign: 'center' }}>
-              <span style={{ color: semantic.text.muted, fontSize: typography.fontSize.sm }}>Loading…</span>
-            </Card>
+            <div className="rounded-lg border border-app-outline bg-app-surface-low p-8 text-center text-sm text-app-outline-strong">
+              Loading…
+            </div>
           ) : recentMeetings.length === 0 ? (
-            <Card style={{ padding: '2rem', textAlign: 'center' }}>
-              <div style={{ color: semantic.text.muted, fontSize: typography.fontSize.sm, marginBottom: '1rem' }}>
+            <div className="rounded-lg border border-app-outline bg-app-surface-low p-8 text-center">
+              <p className="text-sm text-app-fg-variant mb-4">
                 No meetings yet. Start your first meeting to see it here.
-              </div>
-              <Link href="/meetings/live">
-                <Button variant="secondary" size="sm" icon={<Plus size={14} />}>Start Meeting</Button>
+              </p>
+              <Link
+                href="/meetings/live"
+                className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus size={14} />
+                Start Meeting
               </Link>
-            </Card>
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="flex flex-col gap-3">
               {recentMeetings.map((meeting) => (
-                <Card key={meeting.id} hoverable style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 8, background: semantic.bg.tertiary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Video size={18} color={semantic.text.secondary} />
+                <div
+                  key={meeting.id}
+                  className="rounded-lg border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface transition-colors flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 shrink-0 rounded-lg bg-app-primary-container/20 flex items-center justify-center">
+                      <Video size={18} className="text-app-primary" />
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 500, color: semantic.text.primary }}>{meeting.title || 'Untitled Meeting'}</div>
-                      <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted, display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-app-fg truncate">
+                        {meeting.title || 'Untitled Meeting'}
+                      </div>
+                      <div className="text-xs text-app-outline-strong flex items-center gap-1.5 mt-0.5">
                         <Clock size={12} />
                         {formatDate(meeting.createdAt)}
                         {meeting.duration ? ` • ${formatDuration(meeting.duration)}` : ''}
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <Badge variant={statusVariant[meeting.status] ?? 'neutral'}>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+                        statusPill[meeting.status] ?? 'bg-app-surface-highest text-app-fg-variant border-app-outline'
+                      }`}
+                    >
                       {meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1)}
-                    </Badge>
-                    <Link href="/documents">
-                      <Button variant="secondary" size="sm">Docs</Button>
+                    </span>
+                    <Link
+                      href="/documents"
+                      className="text-xs font-medium text-app-fg-variant border border-app-outline rounded-md px-2.5 py-1 hover:text-app-primary hover:border-app-primary/40 transition-colors"
+                    >
+                      Docs
                     </Link>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Usage Widget */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Usage</h2>
+        {/* Recent Documents */}
+        <section>
+          <div className="flex items-center justify-between border-b border-app-outline/40 pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-app-fg">Recent Documents</h3>
+              <span className="text-[11px] font-semibold text-app-primary bg-app-primary-container/20 border border-app-primary/20 rounded-full px-2 py-0.5">
+                {recentDocs.length}
+              </span>
+            </div>
+            <Link
+              href="/documents"
+              className="text-sm font-medium text-app-primary hover:text-app-fg transition-colors"
+            >
+              Studio
+            </Link>
           </div>
 
-          <Card style={{ background: semantic.bg.secondary }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ fontSize: typography.fontSize.sm, color: semantic.text.secondary }}>Plan</div>
-              <Badge variant={isPro ? 'brand' : 'neutral'}>
-                {(user?.plan || 'free').charAt(0).toUpperCase() + (user?.plan || 'free').slice(1)}
-              </Badge>
+          {loadingMeetings ? (
+            <div className="rounded-lg border border-app-outline bg-app-surface-low p-8 text-center text-sm text-app-outline-strong">
+              Loading…
             </div>
-
-            <div style={{ marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: typography.fontSize.sm, marginBottom: '0.5rem' }}>
-                <span style={{ color: semantic.text.primary }}>AI Documents</span>
-                <span style={{ color: semantic.text.muted }}>
-                  {user?.usage?.documentsGenerated ?? 0} / {isPro ? '∞' : '3'}
-                </span>
-              </div>
-              <div style={{ width: '100%', height: 6, background: semantic.bg.tertiary, borderRadius: 3, overflow: 'hidden' }}>
-                {!isPro && (
-                  <div style={{ width: `${Math.min(100, ((user?.usage?.documentsGenerated ?? 0) / 3) * 100)}%`, height: '100%', background: gradients.brand }} />
-                )}
-                {isPro && <div style={{ width: '15%', height: '100%', background: gradients.brand }} />}
-              </div>
+          ) : recentDocs.length === 0 ? (
+            <div className="rounded-lg border border-app-outline bg-app-surface-low p-8 text-center">
+              <p className="text-sm text-app-fg-variant mb-4">
+                No documents yet. Generate your first AI document from a transcript.
+              </p>
+              <button
+                onClick={() => setShowGenerateModal(true)}
+                className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus size={14} />
+                Generate Document
+              </button>
             </div>
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: typography.fontSize.sm, marginBottom: '0.5rem' }}>
-                <span style={{ color: semantic.text.primary }}>Meetings This Month</span>
-                <span style={{ color: semantic.text.muted }}>
-                  {user?.usage?.meetingsThisMonth ?? 0} / {isPro ? '∞' : '5'}
-                </span>
-              </div>
-              <div style={{ width: '100%', height: 6, background: semantic.bg.tertiary, borderRadius: 3, overflow: 'hidden' }}>
-                {!isPro && (
-                  <div style={{ width: `${Math.min(100, ((user?.usage?.meetingsThisMonth ?? 0) / 5) * 100)}%`, height: '100%', background: gradients.brand }} />
-                )}
-                {isPro && <div style={{ width: '10%', height: '100%', background: gradients.brand }} />}
-              </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {recentDocs.map((docItem) => (
+                <Link
+                  key={docItem.id}
+                  href="/documents"
+                  className="rounded-lg border border-app-outline bg-app-surface-low p-4 hover:bg-app-surface transition-colors flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 shrink-0 rounded-lg bg-app-primary-container/20 flex items-center justify-center">
+                    <FileText size={18} className="text-app-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-app-fg truncate">
+                      {docItem.title || 'Untitled Document'}
+                    </div>
+                    <div className="text-xs text-app-outline-strong mt-0.5">
+                      {DOC_TYPE_LABELS[docItem.type] || docItem.type} • {formatDate(docItem.createdAt)}
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-
-            <Link href="/billing">
-              <Button variant="secondary" fullWidth style={{ fontSize: typography.fontSize.xs }}>
-                View billing & plans
-              </Button>
-            </Link>
-          </Card>
-        </div>
-
+          )}
+        </section>
       </div>
 
       {/* Generate Document Modal */}
       {showGenerateModal && (
         <GenerateDocumentModal
           onClose={() => setShowGenerateModal(false)}
-          onGenerated={(doc) => {
+          onGenerated={() => {
             setShowGenerateModal(false);
             router.push('/documents');
           }}

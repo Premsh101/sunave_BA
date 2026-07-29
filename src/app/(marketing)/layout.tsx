@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Navbar from '@/components/marketing/Navbar';
-import Footer from '@/components/marketing/Footer';
+import StitchNav from '@/components/marketing/StitchNav';
+import StitchFooter from '@/components/marketing/StitchFooter';
 
 export const metadata: Metadata = {
   title: {
@@ -16,10 +16,10 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Navbar />
-      <main style={{ minHeight: '100vh' }}>{children}</main>
-      <Footer />
-    </>
+    <div className="bg-mk-bg text-mk-fg font-inter min-h-screen">
+      <StitchNav />
+      <main className="min-h-screen">{children}</main>
+      <StitchFooter />
+    </div>
   );
 }

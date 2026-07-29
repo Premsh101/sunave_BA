@@ -3,38 +3,38 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Video, 
-  FileText, 
-  LayoutTemplate, 
-  MessageSquare, 
-  Settings, 
+import {
+  LayoutDashboard,
+  CalendarClock,
+  Mic,
+  FileText,
+  Terminal,
+  Layers,
+  Settings,
   CreditCard,
   LogOut,
-  Sparkles,
+  AudioLines,
   Search,
   Bell,
   Menu,
-  X
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import Avatar from '@/components/ui/Avatar';
-import Badge from '@/components/ui/Badge';
 import { PageLoader } from '@/components/ui/Spinner';
-import { colors, typography, semantic, transitions, zIndex } from '@/styles/theme';
 
-const sidebarLinks = [
+const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/meetings', label: 'Meetings', icon: Video },
+  { href: '/meetings', label: 'Meetings', icon: CalendarClock, exact: true },
+  { href: '/meetings/live', label: 'Live Meeting', icon: Mic },
   { href: '/documents', label: 'Documents', icon: FileText },
-  { href: '/template-studio', label: 'Template Studio', icon: LayoutTemplate },
-  { href: '/prompt-studio', label: 'Prompt Studio', icon: MessageSquare },
+  { href: '/prompt-studio', label: 'Prompt Studio', icon: Terminal },
+  { href: '/template-studio', label: 'Template Studio', icon: Layers },
 ];
 
-const bottomLinks = [
-  { href: '/settings', label: 'Settings', icon: Settings },
+const BOTTOM_LINKS = [
   { href: '/billing', label: 'Billing', icon: CreditCard },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -61,175 +61,127 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
-  const SIDEBAR_WIDTH = 260;
-  const HEADER_HEIGHT = 64;
+  const isActive = (link: { href: string; exact?: boolean }) =>
+    link.exact ? pathname === link.href : pathname?.startsWith(link.href) || false;
 
-  const sidebarStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: SIDEBAR_WIDTH,
-    background: semantic.bg.secondary,
-    borderRight: `1px solid ${semantic.border.primary}`,
-    display: 'flex',
-    flexDirection: 'column',
-    zIndex: zIndex.sticky,
-    transition: transitions.base,
-    transform: 'translateX(0)',
+  const navItem = (link: (typeof NAV_LINKS)[number] & { exact?: boolean }) => {
+    const active = isActive(link);
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        onClick={() => setMobileMenuOpen(false)}
+        className={`flex items-center gap-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+          active
+            ? 'bg-app-primary-container text-app-on-primary-container border-l-4 border-app-inverse-primary font-semibold'
+            : 'text-app-fg-variant hover:bg-app-surface-high hover:text-app-fg'
+        }`}
+      >
+        <link.icon size={18} />
+        {link.label}
+      </Link>
+    );
   };
 
-  const mobileSidebarStyle: React.CSSProperties = {
-    ...sidebarStyle,
-    transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
-    zIndex: zIndex.modal,
-  };
-
-  const headerStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: SIDEBAR_WIDTH,
-    right: 0,
-    height: HEADER_HEIGHT,
-    background: semantic.bg.primary,
-    borderBottom: `1px solid ${semantic.border.primary}`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 1.5rem',
-    zIndex: zIndex.sticky - 1,
-    backdropFilter: 'blur(12px)',
-  };
-
-  const mobileHeaderStyle: React.CSSProperties = {
-    ...headerStyle,
-    left: 0,
-    padding: '0 1rem',
-  };
-
-  const mainStyle: React.CSSProperties = {
-    paddingTop: HEADER_HEIGHT,
-    paddingLeft: SIDEBAR_WIDTH,
-    minHeight: '100vh',
-    background: semantic.bg.primary,
-  };
-
-  const mobileMainStyle: React.CSSProperties = {
-    ...mainStyle,
-    paddingLeft: 0,
-  };
-
-  const linkStyle = (active: boolean): React.CSSProperties => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.625rem 0.75rem',
-    borderRadius: '8px',
-    fontSize: typography.fontSize.sm,
-    fontWeight: active ? 500 : 400,
-    color: active ? semantic.text.brand : semantic.text.secondary,
-    background: active ? semantic.bg.brandSubtle : 'transparent',
-    textDecoration: 'none',
-    transition: transitions.fast,
-    margin: '0.25rem 1rem',
-  });
-
-  const renderSidebar = (style: React.CSSProperties) => (
-    <aside style={style} className="sidebar-container">
-      <div style={{ height: HEADER_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 1.5rem', borderBottom: `1px solid ${semantic.border.primary}` }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: semantic.text.primary, fontWeight: 600 }}>
-          <div style={{ width: 24, height: 24, borderRadius: 6, background: `linear-gradient(135deg, ${colors.brand[500]}, ${colors.accent[500]})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles size={12} color="#fff" />
-          </div>
-          Sunave
-        </Link>
-        <button className="mobile-close-btn" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: semantic.text.muted }} onClick={() => setMobileMenuOpen(false)}>
+  const sidebar = (
+    <div className="h-full flex flex-col py-8 px-4">
+      {/* Brand */}
+      <div className="flex items-center gap-3 mb-10 px-2">
+        <div className="w-10 h-10 rounded-lg bg-app-primary-container flex items-center justify-center">
+          <AudioLines size={20} className="text-app-on-primary-container" />
+        </div>
+        <div>
+          <h1 className="font-jakarta text-xl font-bold text-app-primary tracking-tight leading-none">
+            Sunave
+          </h1>
+          <p className="text-[11px] font-semibold text-app-fg-variant uppercase tracking-widest mt-1">
+            AI Assistant
+          </p>
+        </div>
+        <button
+          className="lg:hidden ml-auto text-app-fg-variant"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close menu"
+        >
           <X size={20} />
         </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 0' }}>
-        <div style={{ fontSize: '11px', fontWeight: 600, color: semantic.text.muted, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 1.5rem', marginBottom: '0.5rem' }}>
-          Menu
-        </div>
-        {sidebarLinks.map((link) => (
-          <Link key={link.href} href={link.href} style={linkStyle(pathname?.startsWith(link.href) || false)} onClick={() => setMobileMenuOpen(false)}>
-            <link.icon size={18} />
-            {link.label}
-          </Link>
-        ))}
+      {/* Links */}
+      <div className="flex flex-col gap-1 flex-1 overflow-y-auto">{NAV_LINKS.map(navItem)}</div>
 
-        <div style={{ fontSize: '11px', fontWeight: 600, color: semantic.text.muted, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 1.5rem', marginTop: '2rem', marginBottom: '0.5rem' }}>
-          Preferences
-        </div>
-        {bottomLinks.map((link) => (
-          <Link key={link.href} href={link.href} style={linkStyle(pathname?.startsWith(link.href) || false)} onClick={() => setMobileMenuOpen(false)}>
-            <link.icon size={18} />
-            {link.label}
-          </Link>
-        ))}
-      </div>
-
-      <div style={{ padding: '1rem', borderTop: `1px solid ${semantic.border.primary}` }}>
-        <button 
+      {/* Bottom */}
+      <div className="mt-auto pt-4 border-t border-app-outline/30 flex flex-col gap-1">
+        {BOTTOM_LINKS.map(navItem)}
+        <button
           onClick={handleSignOut}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.75rem', borderRadius: '8px', fontSize: typography.fontSize.sm, color: semantic.text.secondary, background: 'transparent', border: 'none', cursor: 'pointer', transition: transitions.fast, textAlign: 'left' }}
+          className="flex items-center gap-4 px-4 py-2 rounded-lg text-sm font-medium text-app-fg-variant hover:bg-app-surface-high hover:text-app-error transition-colors duration-200 text-left"
         >
           <LogOut size={18} />
           Sign out
         </button>
       </div>
-    </aside>
+    </div>
   );
 
   return (
-    <>
-      <style>{`
-        .mobile-only { display: none; }
-        .mobile-close-btn { display: none; }
-        @media (max-width: 1024px) {
-          .desktop-sidebar { display: none !important; }
-          .desktop-header { display: none !important; }
-          .desktop-main { display: none !important; }
-          .mobile-only { display: flex !important; }
-          .mobile-close-btn { display: block !important; }
-        }
-      `}</style>
+    <div className="min-h-screen bg-app-bg text-app-fg font-jakarta">
+      {/* Desktop sidebar */}
+      <nav className="hidden lg:flex flex-col h-screen w-[280px] fixed left-0 top-0 border-r border-app-outline bg-app-bg/80 backdrop-blur-md z-40">
+        {sidebar}
+      </nav>
 
-      {/* Desktop Layout */}
-      {renderSidebar({ ...sidebarStyle, display: 'flex' })}
-      <header style={headerStyle} className="desktop-header">
-        <div style={{ display: 'flex', alignItems: 'center', background: semantic.bg.tertiary, borderRadius: '8px', padding: '0.5rem 1rem', width: '300px' }}>
-          <Search size={16} color={semantic.text.muted} style={{ marginRight: '0.5rem' }} />
-          <input type="text" placeholder="Search transcripts or docs..." style={{ background: 'transparent', border: 'none', color: semantic.text.primary, outline: 'none', width: '100%', fontSize: typography.fontSize.sm }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <Badge variant="success" dot>Live Mode Ready</Badge>
-          <button style={{ background: 'none', border: 'none', color: semantic.text.secondary, cursor: 'pointer' }}><Bell size={20} /></button>
-          <Avatar name={user?.displayName || 'User'} src={user?.photoURL} size={32} />
-        </div>
-      </header>
-      <main style={mainStyle} className="desktop-main">
-        {children}
-      </main>
-
-      {/* Mobile Layout */}
+      {/* Mobile sidebar */}
       {mobileMenuOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: zIndex.modal - 1 }} onClick={() => setMobileMenuOpen(false)} />
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <nav className="fixed left-0 top-0 h-screen w-[280px] border-r border-app-outline bg-app-bg z-50 lg:hidden">
+            {sidebar}
+          </nav>
+        </>
       )}
-      {renderSidebar(mobileSidebarStyle)}
-      <header style={{ ...mobileHeaderStyle, display: 'none' }} className="mobile-only">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button style={{ background: 'none', border: 'none', color: semantic.text.primary }} onClick={() => setMobileMenuOpen(true)}>
-            <Menu size={24} />
+
+      {/* Top bar */}
+      <header className="fixed top-0 right-0 h-16 w-full lg:w-[calc(100%-280px)] bg-app-bg/50 backdrop-blur-md flex justify-between items-center px-4 md:px-8 z-30">
+        <div className="flex items-center gap-3 flex-1 max-w-md">
+          <button
+            className="lg:hidden text-app-fg"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
           </button>
-          <div style={{ fontWeight: 600 }}>Sunave</div>
+          <div className="relative w-full group hidden sm:block">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-app-outline-strong group-focus-within:text-app-primary transition-colors"
+            />
+            <input
+              type="text"
+              placeholder="Search transcripts, docs..."
+              className="w-full bg-app-surface-low border border-app-outline rounded-full py-2 pl-10 pr-4 text-sm text-app-fg placeholder:text-app-outline-strong focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary/20 transition-all"
+            />
+          </div>
         </div>
-        <Avatar name={user?.displayName || 'User'} src={user?.photoURL} size={32} />
+        <div className="flex items-center gap-4 ml-auto">
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center text-app-fg-variant hover:bg-app-surface-high hover:text-app-primary transition-colors relative"
+            aria-label="Notifications"
+          >
+            <Bell size={20} />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-app-error rounded-full ring-2 ring-app-bg" />
+          </button>
+          <div className="rounded-full border border-app-outline overflow-hidden">
+            <Avatar name={user?.displayName || 'User'} src={user?.photoURL} size={32} />
+          </div>
+        </div>
       </header>
-      <main style={{ ...mobileMainStyle, display: 'none' }} className="mobile-only">
-        {children}
-      </main>
-    </>
+
+      {/* Content */}
+      <main className="pt-16 lg:ml-[280px] min-h-screen">{children}</main>
+    </div>
   );
 }

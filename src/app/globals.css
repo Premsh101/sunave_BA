@@ -3,6 +3,121 @@
 
 /* ===== Font Imports ===== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ===== Stitch Design Tokens (Tailwind v4 theme) =====
+   Two palettes:
+   - `mk-*`  → marketing shell (deep obsidian + electric violet, Instrument Serif)
+   - `app-*` → authenticated app shell (deep navy + periwinkle/indigo, Plus Jakarta Sans)
+*/
+@theme {
+  /* Marketing palette */
+  --color-mk-bg: #040712;
+  --color-mk-surface: #0f172a;
+  --color-mk-surface-high: #1e293b;
+  --color-mk-surface-low: #020617;
+  --color-mk-primary: #8b5cf6;
+  --color-mk-primary-dark: #6d28d9;
+  --color-mk-primary-light: #c4b5fd;
+  --color-mk-outline: #334155;
+
+  /* Typography colours — deliberately NOT the default white-on-slate-grey.
+     Headings carry a warm ivory/lavender tint, body copy is violet-tinted
+     rather than neutral grey, and teal is the secondary accent (it echoes
+     the teal in the hero shader). */
+  --color-mk-fg: #f4efff;        /* headings — lavender-tinted ivory */
+  --color-mk-body: #b0a9d0;      /* body copy — violet-tinted, not grey */
+  --color-mk-secondary: #b0a9d0; /* alias kept so existing usages shift too */
+  --color-mk-muted: #837bab;     /* captions / meta */
+  --color-mk-teal: #5eead4;      /* secondary accent */
+  --color-mk-amber: #fcd8a4;     /* tertiary accent for eyebrows */
+
+  /* App palette */
+  --color-app-bg: #0b1326;
+  --color-app-surface-lowest: #060e20;
+  --color-app-surface-low: #131b2e;
+  --color-app-surface: #171f33;
+  --color-app-surface-high: #222a3d;
+  --color-app-surface-highest: #2d3449;
+  --color-app-bright: #31394d;
+  --color-app-outline: #464554;
+  --color-app-outline-strong: #908fa0;
+  --color-app-fg: #dae2fd;
+  --color-app-fg-variant: #c7c4d7;
+  --color-app-primary: #c0c1ff;
+  --color-app-primary-container: #8083ff;
+  --color-app-on-primary-container: #0d0096;
+  --color-app-inverse-primary: #494bd6;
+  --color-app-tertiary: #ffb783;
+  --color-app-error: #ffb4ab;
+
+  /* Shared action color (buttons) */
+  --color-action: #6366f1;
+  --color-action-hover: #4f46e5;
+
+  /* Fonts */
+  --font-display: 'Instrument Serif', serif;
+  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+  --font-geist: 'Geist', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* ===== Stitch shared utilities ===== */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  transition: all 200ms ease-in-out;
+}
+.glass-card:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+.glow-button {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.glow-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+.doc-skeleton {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+/* Luminous heading treatment: warm ivory → lavender → teal.
+   Used on hero/section headlines so type never reads as flat white. */
+.text-luminous {
+  background: linear-gradient(115deg, #fff5e8 0%, #e6dcff 42%, #c4b5fd 68%, #7fe6d4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Eyebrow label: violet → teal, uppercase micro-type */
+.text-eyebrow {
+  background: linear-gradient(90deg, #c4b5fd 0%, #7fe6d4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
 
 /* ===== Theme CSS Variables ===== */
 /* Dark theme (default) */
@@ -200,53 +315,59 @@
   --gradient-hero-text: linear-gradient(135deg, #C4B5FD 0%, #67E8F9 100%);
 }
 
-/* ===== CSS Reset ===== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ===== CSS Reset =====
+   IMPORTANT: this block lives in `@layer base` on purpose. Unlayered CSS
+   always outranks `@layer utilities` in the cascade, so leaving the universal
+   `margin/padding: 0` reset unlayered would silently defeat every Tailwind
+   spacing utility (px-*, py-*, gap-*) across the app. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  color-scheme: var(--color-scheme, dark);
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    color-scheme: var(--color-scheme, dark);
+  }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.5;
-  overflow-x: hidden;
-  min-height: 100vh;
-}
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
 
-img, video {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+  img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
 
-input, textarea, select {
-  font-family: inherit;
-  font-size: inherit;
-}
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+  }
 
-ul, ol {
-  list-style: none;
+  ul, ol {
+    list-style: none;
+  }
 }
 
 /* ===== Custom Scrollbar ===== */

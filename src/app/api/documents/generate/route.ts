@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
-// Centralised model config — override via GEMINI_MODEL env var if needed.
-// gemini-2.0-flash is the stable, widely-available default.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-const GEMINI_FALLBACK_MODEL = 'gemini-2.0-flash';
+import { generateWithFallback } from '@/lib/ai/providers';
 
 const DOCUMENT_PROMPTS: Record<string, { title: string; sections: string }> = {
   brd: {
@@ -145,33 +138,16 @@ Transcript:
 ${transcript}
 """`;
 
-    let modelName = GEMINI_MODEL;
-    let model = genAI.getGenerativeModel({ model: modelName });
+    console.log('[AI] Generating document (type: %s)', type);
+    const result = await generateWithFallback({ systemPrompt, userPrompt });
 
-    let result;
-    try {
-      console.log('[Gemini] Generating document with model: %s (type: %s)', modelName, type);
-      result = await model.generateContent([systemPrompt, userPrompt]);
-    } catch (primaryErr: any) {
-      console.error('[Gemini] Model %s failed: %s', modelName, primaryErr.message);
-      if (modelName !== GEMINI_FALLBACK_MODEL) {
-        console.log('[Gemini] Falling back to model: %s', GEMINI_FALLBACK_MODEL);
-        modelName = GEMINI_FALLBACK_MODEL;
-        model = genAI.getGenerativeModel({ model: modelName });
-        result = await model.generateContent([systemPrompt, userPrompt]);
-        console.log('[Gemini] Fallback model %s succeeded', modelName);
-      } else {
-        throw primaryErr;
-      }
-    }
-
-    const responseText = result.response.text();
-    console.log('[Gemini] Document generated successfully (model: %s, chars: %d)', modelName, responseText.length);
-
-    return NextResponse.json({ document: responseText, model: modelName }, { status: 200 });
+    return NextResponse.json(
+      { document: result.document, provider: result.provider, model: result.model },
+      { status: 200 },
+    );
 
   } catch (error: any) {
-    console.error('[Gemini] Document generation failed:', error?.message || error);
+    console.error('[AI] Document generation failed:', error?.message || error);
     return NextResponse.json({ error: error.message || 'Failed to generate document' }, { status: 500 });
   }
 }

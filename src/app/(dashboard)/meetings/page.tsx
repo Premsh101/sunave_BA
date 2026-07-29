@@ -2,16 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Video, Plus, Clock, Search, Filter } from 'lucide-react';
+import { Calendar, Clock, FileText, Globe, Plus, Search, Video } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import { useAuth } from '@/features/auth/AuthContext';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
-import { typography, semantic } from '@/styles/theme';
 import type { Meeting } from '@/types/meeting';
 
 function formatDuration(seconds?: number): string {
@@ -28,12 +24,26 @@ function formatDate(iso: string): string {
   });
 }
 
-const statusVariant: Record<string, 'success' | 'danger' | 'neutral' | 'warning' | 'brand'> = {
-  completed: 'success',
-  live: 'danger',
-  processing: 'warning',
-  scheduled: 'brand',
-  failed: 'neutral',
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-IN', {
+    hour: 'numeric', minute: '2-digit',
+  });
+}
+
+function formatPlatform(platform?: string): string {
+  if (!platform) return 'Other';
+  return platform
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+const statusPill: Record<string, string> = {
+  completed: 'bg-app-primary/10 text-app-primary border-app-primary/20',
+  live: 'bg-app-error/10 text-app-error border-app-error/20',
+  processing: 'bg-app-tertiary/10 text-app-tertiary border-app-tertiary/20',
+  scheduled: 'bg-app-primary-container/20 text-app-primary border-app-primary-container/30',
+  failed: 'bg-app-surface-highest text-app-fg-variant border-app-outline',
 };
 
 export default function MeetingsPage() {
@@ -65,86 +75,148 @@ export default function MeetingsPage() {
   );
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+    <div className="px-4 md:px-8 pt-8 pb-8 max-w-[1200px] mx-auto min-h-full flex flex-col">
+
+      {/* Header + filters */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 style={{ fontSize: typography.fontSize['2xl'], fontWeight: 700, color: semantic.text.primary, marginBottom: '0.25rem' }}>
-            Meetings
-          </h1>
-          <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-            All your meetings and transcripts
+          <h2 className="text-2xl md:text-[32px] font-semibold text-app-fg mb-1">Past Meetings</h2>
+          <p className="text-app-fg-variant">
+            Review transcripts and generate insights from your previous sessions.
           </p>
         </div>
-        <Link href="/meetings/live">
-          <Button variant="primary" icon={<Plus size={16} />}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <div className="relative">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-app-outline-strong"
+            />
+            <input
+              type="text"
+              placeholder="Search meetings..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-56 bg-app-surface border border-app-outline rounded-lg py-2 pl-10 pr-3 text-sm text-app-fg placeholder:text-app-outline-strong focus:outline-none focus:border-app-primary transition-colors"
+            />
+          </div>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 bg-app-surface border border-app-outline rounded-lg px-3 py-2 text-sm text-app-fg-variant hover:text-app-fg hover:border-app-primary/40 transition-colors"
+          >
+            <Calendar size={15} />
+            All Time
+          </button>
+          <Link
+            href="/meetings/live"
+            className="inline-flex items-center justify-center gap-2 bg-action hover:bg-action-hover text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+          >
+            <Plus size={15} />
             New Meeting
-          </Button>
-        </Link>
-      </div>
-
-      {/* Search */}
-      <div style={{ display: 'flex', alignItems: 'center', background: semantic.bg.secondary, border: `1px solid ${semantic.border.primary}`, borderRadius: '8px', padding: '0.5rem 1rem', marginBottom: '1.5rem', gap: '0.5rem', maxWidth: '400px' }}>
-        <Search size={16} color={semantic.text.muted} />
-        <input
-          type="text"
-          placeholder="Search meetings..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ background: 'transparent', border: 'none', outline: 'none', color: semantic.text.primary, fontSize: typography.fontSize.sm, width: '100%' }}
-        />
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <div className="flex justify-center py-16">
           <Spinner size={32} />
         </div>
       ) : filtered.length === 0 ? (
-        <Card style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: semantic.bg.brandSubtle, margin: '0 auto 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Video size={28} color={semantic.text.brand} />
+        <div className="rounded-xl border border-app-outline bg-app-surface-low text-center px-8 py-16">
+          <div className="w-14 h-14 rounded-2xl bg-app-primary-container/20 mx-auto mb-5 flex items-center justify-center">
+            <Video size={28} className="text-app-primary" />
           </div>
-          <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>
+          <h3 className="text-xl font-semibold text-app-fg mb-2">
             {search ? 'No meetings found' : 'No meetings yet'}
-          </h2>
-          <p style={{ color: semantic.text.secondary, marginBottom: '1.5rem' }}>
+          </h3>
+          <p className="text-app-fg-variant mb-6">
             {search ? 'Try a different search term.' : 'Start your first live meeting to get a transcript.'}
           </p>
           {!search && (
-            <Link href="/meetings/live">
-              <Button variant="primary" icon={<Plus size={16} />}>Start Meeting</Button>
+            <Link
+              href="/meetings/live"
+              className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+            >
+              <Plus size={15} />
+              Start Meeting
             </Link>
           )}
-        </Card>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {filtered.map((meeting) => (
-            <Card key={meeting.id} hoverable style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, background: semantic.bg.tertiary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Video size={18} color={semantic.text.secondary} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 500, color: semantic.text.primary }}>{meeting.title || 'Untitled Meeting'}</div>
-                  <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted, display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                    <Clock size={12} />
-                    {formatDate(meeting.createdAt)} • {formatDuration(meeting.duration)}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Badge variant={statusVariant[meeting.status] ?? 'neutral'}>
-                  {meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1)}
-                </Badge>
-                {meeting.transcriptId && (
-                  <Link href={`/documents?meetingId=${meeting.id}`}>
-                    <Button variant="secondary" size="sm">Generate Doc</Button>
-                  </Link>
-                )}
-              </div>
-            </Card>
-          ))}
+        <div className="rounded-xl border border-app-outline bg-app-surface-low overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-app-surface border-b border-app-outline">
+                <tr>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                    Meeting Details
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                    Duration
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                    Platform
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-app-fg-variant">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-app-fg-variant text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-app-outline/40">
+                {filtered.map((meeting) => (
+                  <tr key={meeting.id} className="group hover:bg-app-surface-high/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-app-fg group-hover:text-app-primary transition-colors">
+                        {meeting.title || 'Untitled Meeting'}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-app-outline-strong mt-1">
+                        <Calendar size={12} />
+                        {formatDate(meeting.createdAt)}
+                        <span className="text-app-outline">•</span>
+                        <Clock size={12} />
+                        {formatTime(meeting.createdAt)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-app-fg-variant whitespace-nowrap">
+                      {formatDuration(meeting.duration)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-app-fg-variant bg-app-surface-highest border border-app-outline rounded-full px-2.5 py-1 whitespace-nowrap">
+                        <Globe size={12} className="text-app-primary" />
+                        {formatPlatform(meeting.platform)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                          statusPill[meeting.status] ?? 'bg-app-surface-highest text-app-fg-variant border-app-outline'
+                        }`}
+                      >
+                        {meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {meeting.transcriptId ? (
+                        <Link
+                          href={`/documents?meetingId=${meeting.id}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-app-fg-variant border border-app-outline rounded-md px-2.5 py-1.5 hover:text-app-primary hover:border-app-primary/40 transition-all lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100"
+                          title="Generate document from this transcript"
+                        >
+                          <FileText size={13} />
+                          Generate Doc
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-app-outline-strong">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

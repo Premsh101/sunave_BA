@@ -1,247 +1,144 @@
 import type { Metadata } from 'next';
-import React, { type CSSProperties } from 'react';
-import { Building2, Users, Shield, Headphones, ArrowRight, CheckCircle, Zap } from 'lucide-react';
-import Link from 'next/link';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import { colors, typography, semantic, borderRadius, gradients } from '@/styles/theme';
-import { container, grid, gradientText } from '@/styles/mixins';
+import React from 'react';
+import { Lock, Globe, Headset, ArrowRight } from 'lucide-react';
+import Reveal from '@/components/marketing/Reveal';
+import EnterpriseForm from '@/components/marketing/EnterpriseForm';
 
 export const metadata: Metadata = {
   title: 'Enterprise',
-  description: 'Enterprise-grade meeting intelligence for large organizations. Custom deployment, SSO, dedicated support, and compliance built in.',
+  description:
+    'Deploy Sunave AI across your organization with enterprise-grade security, dedicated support, and scalable architecture designed for business analysts.',
 };
 
-const enterpriseFeatures = [
+const features = [
   {
-    icon: <Shield size={28} color={colors.brand[400]} />,
-    title: 'Advanced Security & Compliance',
-    description: 'SSO/SAML with Okta and Azure AD, custom data retention, audit logs, GDPR/CCPA compliance, and optional on-premises deployment.',
+    icon: Lock,
+    title: 'SSO & Identity',
+    desc: "Seamless integration with SAML, Okta, and Azure AD. Enforce your organization's security policies with zero friction.",
   },
   {
-    icon: <Building2 size={28} color={colors.accent[400]} />,
-    title: 'Organization-Wide Administration',
-    description: 'Centralized admin console, team provisioning, bulk user management, organization-wide template control, and usage analytics.',
+    icon: Globe,
+    title: 'Data Residency',
+    desc: 'Choose where your data lives. We offer secure, isolated deployments in India, EU, and US regions to meet compliance requirements.',
   },
   {
-    icon: <Users size={28} color={colors.brand[400]} />,
-    title: 'Dedicated Customer Success',
-    description: 'A dedicated Customer Success Manager, onboarding program, quarterly business reviews, and a private Slack channel for your team.',
-  },
-  {
-    icon: <Headphones size={28} color={colors.accent[400]} />,
-    title: 'Priority SLA Support',
-    description: '24/7 priority support with guaranteed response times (1hr critical, 4hr standard), escalation paths, and a named support engineer.',
-  },
-  {
-    icon: <Zap size={28} color={colors.brand[400]} />,
-    title: 'Custom AI & Integrations',
-    description: "Fine-tuned AI models on your domain terminology, custom integration development, and access to Sunave's enterprise API.",
-  },
-  {
-    icon: <CheckCircle size={28} color={colors.accent[400]} />,
-    title: 'Flexible Deployment',
-    description: 'Deploy in your cloud (AWS, GCP, Azure), on-premises, or via our managed SaaS. Air-gapped environments supported.',
+    icon: Headset,
+    title: 'Dedicated Support',
+    desc: '24/7 access to a dedicated Technical Account Manager. Priority resolution for analysts working on critical deliverables.',
   },
 ];
 
-const proofPoints = [
-  { stat: '10,000+', label: 'Enterprise users' },
-  { stat: '98.9%', label: 'Uptime SLA' },
-  { stat: '< 1hr', label: 'Critical response time' },
-  { stat: '40+', label: 'Countries deployed' },
-];
-
-const onboardingSteps = [
-  { step: '01', title: 'Discovery call', desc: 'We understand your team\'s workflow, compliance requirements, and integration needs.' },
-  { step: '02', title: 'Custom configuration', desc: 'We set up SSO, configure data residency, and build custom integrations alongside your IT team.' },
-  { step: '03', title: 'Pilot rollout', desc: 'A structured 2-week pilot with 20–50 users, monitored by your dedicated CSM.' },
-  { step: '04', title: 'Full deployment', desc: 'Organization-wide rollout with onboarding sessions, documentation, and a success plan.' },
+const caseStudies = [
+  {
+    eyebrow: 'Global Financial Services',
+    stat: '+40%',
+    label: 'Faster Data Extraction',
+    desc: 'Reduced time spent manually reviewing transcripts, allowing analysts to focus on trend synthesis.',
+  },
+  {
+    eyebrow: 'Top Tier Consultancy',
+    stat: '15 hrs',
+    label: 'Saved Per Week',
+    desc: 'Automated meeting summaries and action items streamlined client communications across major engagements.',
+  },
 ];
 
 export default function EnterprisePage() {
-  const heroStyle: CSSProperties = {
-    padding: '8rem 0 5rem',
-    background: semantic.bg.primary,
-    position: 'relative',
-    overflow: 'hidden',
-  };
-
-  const heroBgStyle: CSSProperties = {
-    position: 'absolute',
-    top: '-30%',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '80%',
-    height: '700px',
-    background: 'radial-gradient(ellipse at top, rgba(99,102,241,0.12) 0%, transparent 65%)',
-    pointerEvents: 'none',
-    zIndex: 0,
-  };
-
-  const iconWrapStyle: CSSProperties = {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.xl,
-    background: semantic.bg.brandSubtle,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '1.25rem',
-  };
-
-  const statStyle: CSSProperties = {
-    textAlign: 'center',
-    padding: '2rem',
-    borderRadius: borderRadius.xl,
-    background: semantic.bg.secondary,
-    border: `1px solid ${semantic.border.subtle}`,
-  };
-
   return (
-    <>
+    <div className="pt-16">
       {/* Hero */}
-      <section style={heroStyle}>
-        <div style={heroBgStyle} />
-        <div style={{ ...container, position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Badge variant="brand" icon={<Building2 size={12} />}>
-              Enterprise plan
-            </Badge>
-          </div>
-          <h1 style={{
-            fontSize: typography.fontSize['5xl'],
-            fontWeight: typography.fontWeight.extrabold,
-            color: semantic.text.primary,
-            marginBottom: '1rem',
-            letterSpacing: typography.letterSpacing.tighter,
-            maxWidth: '800px',
-            margin: '0 auto 1rem',
-          }}>
-            Meeting intelligence at{' '}
-            <span style={gradientText()}>enterprise scale</span>
+      <section className="max-w-[1440px] mx-auto px-4 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+        <div>
+          <h1 className="font-display text-[48px] md:text-[64px] leading-[1.05] text-luminous mb-6">
+            AI for High-Stakes Teams
           </h1>
-          <p style={{ fontSize: typography.fontSize.xl, color: semantic.text.secondary, maxWidth: '640px', margin: '1rem auto 2.5rem' }}>
-            Custom deployment, dedicated support, advanced security, and the flexibility to meet the demands of any large organization.
+          <p className="text-lg text-mk-secondary font-light mb-10 max-w-xl">
+            Deploy Sunave AI across your organization with enterprise-grade security, dedicated
+            support, and scalable architecture designed for business analysts.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <Button variant="primary" size="lg" iconRight={<ArrowRight size={18} />}>
-              Contact Sales
-            </Button>
-            <Link href="/pricing">
-              <Button variant="secondary" size="lg">Compare plans</Button>
-            </Link>
-          </div>
+          <a
+            href="#contact"
+            className="inline-flex items-center gap-2 text-sm bg-mk-primary text-white px-8 py-4 rounded-xl glow-button font-medium"
+          >
+            Talk to Sales
+            <ArrowRight size={16} />
+          </a>
         </div>
-      </section>
-
-      {/* Social Proof */}
-      <section style={{ padding: '4rem 0', background: semantic.bg.secondary }}>
-        <div style={container}>
-          <div style={grid(4, '1.5rem')}>
-            {proofPoints.map((p) => (
-              <div key={p.label} style={statStyle}>
-                <p style={{ fontSize: typography.fontSize['4xl'], fontWeight: typography.fontWeight.extrabold, color: semantic.text.primary, marginBottom: '0.25rem', ...gradientText() }}>
-                  {p.stat}
-                </p>
-                <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-                  {p.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enterprise Features */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.primary }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['3xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, textAlign: 'center', marginBottom: '1rem' }}>
-            Everything your enterprise needs
-          </h2>
-          <p style={{ color: semantic.text.secondary, textAlign: 'center', fontSize: typography.fontSize.lg, marginBottom: '4rem', maxWidth: '600px', margin: '0 auto 4rem' }}>
-            Purpose-built capabilities for large organizations with complex requirements.
-          </p>
-          <div style={grid(3, '1.5rem')}>
-            {enterpriseFeatures.map((f) => (
-              <Card key={f.title} variant="elevated" hoverable>
-                <div style={iconWrapStyle}>{f.icon}</div>
-                <h3 style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: semantic.text.primary, marginBottom: '0.75rem' }}>
-                  {f.title}
-                </h3>
-                <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm, lineHeight: 1.65 }}>
-                  {f.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Onboarding Steps */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.secondary }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['3xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, textAlign: 'center', marginBottom: '4rem' }}>
-            From contract to full deployment in weeks
-          </h2>
-          <div style={grid(4, '2rem')}>
-            {onboardingSteps.map((s) => (
-              <div key={s.step} style={{ textAlign: 'center' }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: borderRadius.full,
-                  background: gradients.brand,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 1.25rem',
-                  fontWeight: typography.fontWeight.bold,
-                  color: '#fff',
-                  fontSize: typography.fontSize.base,
-                }}>
-                  {s.step}
-                </div>
-                <h3 style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: semantic.text.primary, marginBottom: '0.5rem' }}>
-                  {s.title}
-                </h3>
-                <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm, lineHeight: 1.65 }}>
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.primary, textAlign: 'center' }}>
-        <div style={container}>
-          <div style={{
-            background: gradients.brandDark,
-            borderRadius: borderRadius['2xl'],
-            padding: '5rem 2rem',
-            border: `1px solid ${semantic.border.brandSubtle}`,
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
-            <h2 style={{ fontSize: typography.fontSize['4xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, marginBottom: '1rem', position: 'relative' }}>
-              Ready to get started?
-            </h2>
-            <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.lg, marginBottom: '2rem', maxWidth: '520px', margin: '0 auto 2rem', position: 'relative' }}>
-              Talk to our enterprise sales team to get a custom demo and pricing for your organization.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', position: 'relative' }}>
-              <Button variant="primary" size="lg" iconRight={<ArrowRight size={18} />}>
-                Request a demo
-              </Button>
-              <Link href="/security">
-                <Button variant="secondary" size="lg">
-                  View security details
-                </Button>
-              </Link>
+        <div className="relative aspect-video rounded-xl border border-mk-outline overflow-hidden bg-mk-surface-low">
+          <div className="absolute inset-0 bg-gradient-to-br from-mk-primary/25 via-transparent to-mk-primary-dark/30" />
+          <div className="absolute -top-16 -left-16 w-64 h-64 bg-mk-primary/30 rounded-full blur-[80px]" />
+          <div className="absolute -bottom-20 -right-10 w-72 h-72 bg-mk-primary-dark/40 rounded-full blur-[90px]" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full glass-panel flex items-center justify-center shadow-[0_0_60px_rgba(139,92,246,0.35)]">
+              <div className="w-10 h-10 rounded-full bg-mk-primary animate-ping opacity-20 absolute" />
+              <Globe size={32} className="text-mk-primary-light relative" />
             </div>
           </div>
         </div>
       </section>
-    </>
+
+      {/* Features grid */}
+      <Reveal>
+        <section className="max-w-[1440px] mx-auto px-4 md:px-8 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {features.map((f) => (
+              <div key={f.title} className="glass-panel rounded-xl p-8">
+                <div className="w-12 h-12 rounded-lg bg-mk-primary/10 flex items-center justify-center mb-6">
+                  <f.icon size={22} className="text-mk-primary" />
+                </div>
+                <h3 className="font-display text-2xl text-mk-fg mb-3">{f.title}</h3>
+                <p className="text-sm text-mk-secondary font-light leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </Reveal>
+
+      {/* Case studies band */}
+      <section className="bg-mk-surface-low border-y border-mk-outline/40 py-20">
+        <Reveal>
+          <div className="max-w-[1200px] mx-auto px-4 md:px-8">
+            <h2 className="font-display text-[36px] md:text-[44px] text-mk-fg text-center mb-14">
+              Proven ROI for Analysts
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {caseStudies.map((cs) => (
+                <div key={cs.eyebrow} className="glass-panel rounded-xl p-10">
+                  <p className="text-[10px] text-mk-primary uppercase tracking-widest font-semibold mb-6">
+                    {cs.eyebrow}
+                  </p>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="font-display text-[48px] leading-none text-mk-fg">
+                      {cs.stat}
+                    </span>
+                    <span className="text-mk-primary-light font-medium">{cs.label}</span>
+                  </div>
+                  <p className="text-sm text-mk-secondary font-light leading-relaxed mt-4">
+                    {cs.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* Lead form */}
+      <section id="contact" className="py-24 px-4 scroll-mt-24">
+        <Reveal>
+          <div className="max-w-2xl mx-auto glass-panel rounded-xl p-8 md:p-12">
+            <div className="text-center mb-10">
+              <h2 className="font-display text-[36px] md:text-[40px] text-mk-fg mb-3">
+                Talk to Sales
+              </h2>
+              <p className="text-mk-secondary font-light">
+                Request a demo or discuss custom deployment options.
+              </p>
+            </div>
+            <EnterpriseForm />
+          </div>
+        </Reveal>
+      </section>
+    </div>
   );
 }

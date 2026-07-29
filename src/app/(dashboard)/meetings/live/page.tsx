@@ -2,12 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Monitor, Square, Save, Languages, Volume2, VolumeX, UserCircle } from 'lucide-react';
-import { useTranscription } from '@/features/transcription/useTranscription';
+import { useTranscription, type CaptureMode } from '@/features/transcription/useTranscription';
 import { useTextToSpeech } from '@/features/speech/useTextToSpeech';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import GenerateDocumentModal from '@/components/ui/GenerateDocumentModal';
-import { typography, semantic, colors, shadows } from '@/styles/theme';
 
 export default function LiveMeeting() {
   const [language, setLanguage] = useState('en-US');
@@ -24,7 +21,7 @@ export default function LiveMeeting() {
     }
   }, [transcript, interimTranscript]);
 
-  const handleStart = (captureMode: 'mic' | 'system') => {
+  const handleStart = (captureMode: CaptureMode) => {
     // Never read aloud while capturing — the mic would transcribe the TTS voice.
     if (isSpeaking) stopSpeaking();
     startRecording(captureMode);
@@ -44,45 +41,60 @@ export default function LiveMeeting() {
     setShowGenerateModal(true);
   };
 
+  const hasTranscript = Boolean(transcript || interimTranscript);
+
   return (
-    <div style={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', background: semantic.bg.primary }}>
-      
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-app-bg">
       {/* Header */}
-      <div style={{ padding: '1rem 1.5rem', borderBottom: `1px solid ${semantic.border.primary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: semantic.bg.secondary }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h1 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>New Live Meeting</h1>
+      <div className="px-4 md:px-6 py-4 border-b border-app-outline/50 flex flex-wrap justify-between items-center gap-3 bg-app-surface-low/50 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-app-fg">New Live Meeting</h1>
           {isRecording ? (
-            <Badge variant="danger" icon={<div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite' }} />}>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-app-error/10 border border-app-error/30 text-app-error text-xs font-semibold uppercase tracking-wider">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-app-error opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-app-error" />
+              </span>
               Transcribing Live
-            </Badge>
+            </span>
           ) : (
-            <Badge variant="neutral">Ready</Badge>
+            <span className="px-3 py-1 rounded-full bg-app-surface-highest border border-app-outline/50 text-app-fg-variant text-xs font-semibold uppercase tracking-wider">
+              Ready
+            </span>
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', background: semantic.bg.tertiary, borderRadius: '8px', padding: '4px' }}>
-            <button 
-              onClick={() => setMode('bot-free')}
-              style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', background: mode === 'bot-free' ? semantic.bg.elevated : 'transparent', color: mode === 'bot-free' ? semantic.text.primary : semantic.text.muted, fontSize: typography.fontSize.sm, cursor: 'pointer', transition: 'all 0.2s', boxShadow: mode === 'bot-free' ? shadows.sm : 'none', fontWeight: mode === 'bot-free' ? 500 : 400 }}
-            >
-              Bot-Free Mode
-            </button>
-            <button 
-              onClick={() => setMode('ai-assistant')}
-              style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', background: mode === 'ai-assistant' ? semantic.bg.elevated : 'transparent', color: mode === 'ai-assistant' ? semantic.text.primary : semantic.text.muted, fontSize: typography.fontSize.sm, cursor: 'pointer', transition: 'all 0.2s', boxShadow: mode === 'ai-assistant' ? shadows.sm : 'none', fontWeight: mode === 'ai-assistant' ? 500 : 400 }}
-            >
-              AI Assistant Mode
-            </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Mode toggle */}
+          <div className="flex items-center bg-app-surface rounded-lg p-1 border border-app-outline/40">
+            {(
+              [
+                { key: 'bot-free', label: 'Bot-Free Mode' },
+                { key: 'ai-assistant', label: 'AI Assistant Mode' },
+              ] as const
+            ).map((m) => (
+              <button
+                key={m.key}
+                onClick={() => setMode(m.key)}
+                className={`px-4 py-2 rounded-md text-sm transition-all ${
+                  mode === m.key
+                    ? 'bg-app-surface-highest text-app-fg font-medium shadow-sm'
+                    : 'text-app-fg-variant hover:text-app-fg'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: semantic.bg.tertiary, padding: '0.5rem 1rem', borderRadius: '8px' }}>
-            <Languages size={16} color={semantic.text.muted} />
-            <select 
-              value={language} 
+          {/* Language */}
+          <div className="flex items-center gap-2 bg-app-surface px-4 py-2 rounded-lg border border-app-outline/40">
+            <Languages size={16} className="text-app-fg-variant" />
+            <select
+              value={language}
               onChange={(e) => setLanguage(e.target.value)}
               disabled={isRecording}
-              style={{ background: 'transparent', border: 'none', color: semantic.text.primary, fontSize: typography.fontSize.sm, outline: 'none' }}
+              className="bg-transparent border-none text-app-fg text-sm outline-none disabled:opacity-50"
             >
               <option value="en-US">English (US)</option>
               <option value="en-GB">English (UK)</option>
@@ -90,113 +102,115 @@ export default function LiveMeeting() {
               <option value="es-ES">Spanish</option>
             </select>
           </div>
-          
+
           {ttsSupported && (
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
-              disabled={isRecording || (!transcript && !interimTranscript)}
+            <button
               onClick={handleReadAloud}
+              disabled={isRecording || !hasTranscript}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-app-outline text-app-fg text-sm font-medium hover:bg-app-surface-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
+              {isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
               {isSpeaking ? 'Stop Reading' : 'Read Aloud'}
-            </Button>
+            </button>
           )}
 
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Save size={16} />}
-            disabled={!transcript && !interimTranscript}
+          <button
             onClick={handleSaveAndGenerate}
+            disabled={!hasTranscript}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-action hover:bg-action-hover text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(99,102,241,0.25)]"
           >
-            Save & Generate
-          </Button>
+            <Save size={16} />
+            Save &amp; Generate
+          </button>
         </div>
       </div>
 
-      {/* Main Transcript Area */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Left - Transcript */}
-        <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column' }} ref={scrollRef}>
-          
-          {!transcript && !interimTranscript && !isRecording && (
-            <div style={{ margin: 'auto', textAlign: 'center', maxWidth: '400px' }}>
-              <div style={{ width: 64, height: 64, borderRadius: 16, background: semantic.bg.brandSubtle, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={32} color={colors.brand[400]} />
-              </div>
-          <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>Start Transcription</h2>
-              <p style={{ color: semantic.text.secondary, marginBottom: '2rem' }}>
-                Speech recognition runs natively in your browser — no bots, no cloud keys.
-                Perfect for Google Meet, Teams, or Zoom. For meeting audio, share the tab
-                and keep it playing on your speakers.
-              </p>
+      {/* Transcript area */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8 flex flex-col" ref={scrollRef}>
+        {!hasTranscript && !isRecording && (
+          <div className="m-auto text-center max-w-md">
+            <div className="w-16 h-16 rounded-2xl bg-app-primary-container/20 border border-app-primary/20 mx-auto mb-6 flex items-center justify-center">
+              <Mic size={32} className="text-app-primary" />
             </div>
-          )}
+            <h2 className="text-xl font-semibold text-app-fg mb-2">Start Transcription</h2>
+            <p className="text-app-fg-variant mb-8">
+              Speech recognition runs natively in your browser — no bots, no cloud keys.
+              &quot;Capture Everything&quot; hears both the meeting (share the tab, keep audio on
+              speakers — not headphones) and your own voice through the microphone.
+            </p>
+          </div>
+        )}
 
-          {!isSupported && (
-            <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: '8px', color: colors.danger[400], marginBottom: '2rem' }}>
-              Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.
-            </div>
-          )}
+        {!isSupported && (
+          <div className="p-4 bg-app-error/10 border border-app-error/25 rounded-lg text-app-error mb-8 text-sm">
+            Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.
+          </div>
+        )}
 
-          {error && (
-            <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: '8px', color: colors.danger[400], marginBottom: '2rem' }}>
-              Error: {error}
-            </div>
-          )}
+        {error && (
+          <div className="p-4 bg-app-error/10 border border-app-error/25 rounded-lg text-app-error mb-8 text-sm">
+            Error: {error}
+          </div>
+        )}
 
-          {transcript && (
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                <UserCircle size={20} color={semantic.text.muted} />
-                <span style={{ fontWeight: 600, color: semantic.text.primary, fontSize: typography.fontSize.sm }}>Speaker 1</span>
-              </div>
-              <p style={{ color: semantic.text.primary, fontSize: typography.fontSize.lg, lineHeight: 1.6, paddingLeft: '28px' }}>
-                {transcript}
-              </p>
+        {transcript && (
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <UserCircle size={20} className="text-app-fg-variant" />
+              <span className="font-semibold text-app-fg text-sm">Speaker 1</span>
             </div>
-          )}
+            <p className="text-app-fg text-lg leading-relaxed pl-7">{transcript}</p>
+          </div>
+        )}
 
-          {interimTranscript && (
-            <div style={{ marginBottom: '1.5rem', opacity: 0.7 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                <UserCircle size={20} color={semantic.text.muted} />
-                <span style={{ fontWeight: 600, color: semantic.text.primary, fontSize: typography.fontSize.sm }}>Speaker (Live)</span>
-              </div>
-              <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.lg, lineHeight: 1.6, paddingLeft: '28px' }}>
-                {interimTranscript}
-              </p>
+        {interimTranscript && (
+          <div className="mb-6 opacity-70">
+            <div className="flex items-center gap-3 mb-2">
+              <UserCircle size={20} className="text-app-fg-variant" />
+              <span className="font-semibold text-app-fg text-sm">Speaker (Live)</span>
             </div>
-          )}
-        </div>
+            <p className="text-app-fg-variant text-lg leading-relaxed pl-7">{interimTranscript}</p>
+          </div>
+        )}
       </div>
 
-      {/* Bottom Recording Bar */}
-      <div style={{ padding: '1rem 2rem', background: semantic.bg.elevated, borderTop: `1px solid ${semantic.border.primary}`, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      {/* Bottom control bar */}
+      <div className="px-4 md:px-8 py-4 bg-app-surface-low border-t border-app-outline/50 flex justify-center items-center">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           {!isRecording ? (
             <>
-              <Button variant="primary" disabled={!isSupported} onClick={() => handleStart('system')} icon={<Monitor size={18} />}>
-                Capture Tab Audio (Meet/Zoom)
-              </Button>
-              <Button variant="secondary" disabled={!isSupported} onClick={() => handleStart('mic')} icon={<Mic size={18} />}>
-                Capture Microphone Only
-              </Button>
+              <button
+                onClick={() => handleStart('both')}
+                disabled={!isSupported}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-action hover:bg-action-hover text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+              >
+                <Monitor size={18} />
+                Capture Everything (Meeting + My Mic)
+              </button>
+              <button
+                onClick={() => handleStart('mic')}
+                disabled={!isSupported}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg border border-app-outline text-app-fg text-sm font-medium hover:bg-app-surface-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Mic size={18} />
+                Microphone Only
+              </button>
             </>
           ) : (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '2rem', color: semantic.text.muted }}>
-                <Volume2 size={16} /> <span style={{ fontSize: typography.fontSize.sm }}>Capturing Audio</span>
+              <div className="flex items-center gap-2 mr-8 text-app-fg-variant text-sm">
+                <Volume2 size={16} className="text-app-primary animate-pulse" /> Capturing Audio
               </div>
-              <Button variant="danger" onClick={stopRecording} icon={<Square size={18} />}>
+              <button
+                onClick={stopRecording}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-app-error/90 hover:bg-app-error text-[#450a0a] text-sm font-semibold transition-colors"
+              >
+                <Square size={18} />
                 Stop Transcription
-              </Button>
+              </button>
             </>
           )}
         </div>
-        
       </div>
 
       {/* Generate Document Modal */}
@@ -212,5 +226,3 @@ export default function LiveMeeting() {
     </div>
   );
 }
-
-
