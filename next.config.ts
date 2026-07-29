@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Webpack config for Socket.io and Node.js modules
+  // Webpack fallback for Node.js core modules pulled in by client bundles
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
