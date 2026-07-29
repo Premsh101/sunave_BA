@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Monitor, Square, Save, Languages, Volume2, VolumeX, UserCircle } from 'lucide-react';
-import { useTranscription } from '@/features/transcription/useTranscription';
+import { useTranscription, type CaptureMode } from '@/features/transcription/useTranscription';
 import { useTextToSpeech } from '@/features/speech/useTextToSpeech';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -24,7 +24,7 @@ export default function LiveMeeting() {
     }
   }, [transcript, interimTranscript]);
 
-  const handleStart = (captureMode: 'mic' | 'system') => {
+  const handleStart = (captureMode: CaptureMode) => {
     // Never read aloud while capturing — the mic would transcribe the TTS voice.
     if (isSpeaking) stopSpeaking();
     startRecording(captureMode);
@@ -128,8 +128,8 @@ export default function LiveMeeting() {
           <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>Start Transcription</h2>
               <p style={{ color: semantic.text.secondary, marginBottom: '2rem' }}>
                 Speech recognition runs natively in your browser — no bots, no cloud keys.
-                Perfect for Google Meet, Teams, or Zoom. For meeting audio, share the tab
-                and keep it playing on your speakers.
+                &quot;Capture Everything&quot; hears both the meeting (share the tab, keep audio on
+                speakers — not headphones) and your own voice through the microphone.
               </p>
             </div>
           )}
@@ -178,11 +178,11 @@ export default function LiveMeeting() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {!isRecording ? (
             <>
-              <Button variant="primary" disabled={!isSupported} onClick={() => handleStart('system')} icon={<Monitor size={18} />}>
-                Capture Tab Audio (Meet/Zoom)
+              <Button variant="primary" disabled={!isSupported} onClick={() => handleStart('both')} icon={<Monitor size={18} />}>
+                Capture Everything (Meeting + My Mic)
               </Button>
               <Button variant="secondary" disabled={!isSupported} onClick={() => handleStart('mic')} icon={<Mic size={18} />}>
-                Capture Microphone Only
+                Microphone Only
               </Button>
             </>
           ) : (

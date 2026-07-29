@@ -166,9 +166,34 @@ FIREBASE_PRIVATE_KEY=<your-firebase-service-account-private-key>
 >
 > **Speech-to-text / text-to-speech** — both run entirely in the browser via the Web Speech API (`SpeechRecognition` / `speechSynthesis`). No Google Cloud Speech service account, `GOOGLE_APPLICATION_CREDENTIALS`, or Socket.IO configuration is needed.
 
-### Gemini AI (Secret)
+### AI Providers (Secrets)
+
+Document generation tries providers in this order, skipping any that are not
+configured, and falls through to the next on any error:
+**OpenRouter → Local LLM → OpenAI → Gemini → Claude.**
+Configure at least one.
+
 ```
+# 1. OpenRouter
+OPENROUTER_API_KEY=<your-openrouter-api-key>
+OPENROUTER_MODEL=openrouter/auto            # optional
+
+# 2. Local LLM (any OpenAI-compatible endpoint, e.g. Ollama or LM Studio)
+LOCAL_LLM_BASE_URL=http://localhost:11434/v1
+LOCAL_LLM_MODEL=llama3.1                    # optional
+LOCAL_LLM_API_KEY=<optional-key>            # optional
+
+# 3. OpenAI
+OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_MODEL=gpt-4o-mini                    # optional
+
+# 4. Google Gemini
 GEMINI_API_KEY=<your-google-generative-ai-api-key>
+GEMINI_MODEL=gemini-2.0-flash               # optional
+
+# 5. Anthropic Claude
+ANTHROPIC_API_KEY=<your-anthropic-api-key>
+ANTHROPIC_MODEL=claude-opus-5               # optional
 ```
 
 ### Razorpay (Secret)
@@ -286,7 +311,11 @@ Using port `3010` avoids conflict with any other apps deployed on the same Cooli
 | `FIREBASE_PROJECT_ID` | ✅* | **Yes** | Firebase project ID — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
 | `FIREBASE_CLIENT_EMAIL` | ✅* | **Yes** | Firebase service account client email — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
 | `FIREBASE_PRIVATE_KEY` | ✅* | **Yes** | Firebase service account private key — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
-| `GEMINI_API_KEY` | ✅ | **Yes** | Google Generative AI key |
+| `OPENROUTER_API_KEY` | ✅* | **Yes** | OpenRouter key (AI provider #1) |
+| `LOCAL_LLM_BASE_URL` | ✅* | No | OpenAI-compatible local LLM endpoint (AI provider #2) |
+| `OPENAI_API_KEY` | ✅* | **Yes** | OpenAI key (AI provider #3) |
+| `GEMINI_API_KEY` | ✅* | **Yes** | Google Generative AI key (AI provider #4) |
+| `ANTHROPIC_API_KEY` | ✅* | **Yes** | Anthropic Claude key (AI provider #5) |
 | `RAZORPAY_KEY_ID` | ✅ | **Yes** | Razorpay key ID |
 | `RAZORPAY_KEY_SECRET` | ✅ | **Yes** | Razorpay secret key |
 | `PORT` | ✅ | No | `3010` |

@@ -78,13 +78,16 @@ const RAPID_RESTART_WINDOW_MS = 1000;
  * streaming raw PCM to a backend.
  *
  * Capture modes:
- *  - 'mic'    → recognition listens to the default microphone.
- *  - 'system' → additionally captures tab/system audio (getDisplayMedia)
- *               and plays it out through the speakers so the recognizer
- *               can hear the meeting audio. Use this for Google Meet,
- *               Teams or Zoom running in another tab; don't use headphones
- *               in this mode, since recognition listens via the microphone.
+ *  - 'mic'  → recognition listens to the default microphone only.
+ *  - 'both' → captures EVERYTHING: what the user says (microphone) AND
+ *             what others say in the meeting. Tab/system audio is captured
+ *             via getDisplayMedia and played out through the speakers so
+ *             the microphone-based recognizer hears both sides. Use this
+ *             for Google Meet, Teams or Zoom running in another tab; don't
+ *             use headphones in this mode, since the meeting audio must be
+ *             audible to the microphone.
  */
+export type CaptureMode = 'mic' | 'both';
 export function useTranscription(language = 'en-US') {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -249,7 +252,7 @@ export function useTranscription(language = 'en-US') {
   }, [stopRecording]);
 
   const startRecording = useCallback(
-    async (mode: 'mic' | 'system') => {
+    async (mode: CaptureMode) => {
       if (isRecordingRef.current) return;
 
       if (!getSpeechRecognition()) {
@@ -260,9 +263,17 @@ export function useTranscription(language = 'en-US') {
       }
 
       try {
-        if (mode === 'system') {
-          // Capture tab/system audio and play it out loud so the
-          // microphone-based recognizer can hear the meeting.
+        // Both modes need the microphone — recognition listens through it.
+        // Prompt for permission up front so a denial surfaces as a clear
+        // error before recognition starts.
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Recognition opens the mic itself — release our handle.
+        micStream.getTracks().forEach((t) => t.stop());
+
+        if (mode === 'both') {
+          // Additionally capture tab/system audio (the other participants)
+          // and play it out loud so the microphone-based recognizer hears
+          // the meeting alongside the user's own voice.
           const displayStream = await navigator.mediaDevices.getDisplayMedia({
             video: true,
             audio: {
@@ -277,7 +288,7 @@ export function useTranscription(language = 'en-US') {
             displayStream.getTracks().forEach((t) => t.stop());
             setError(
               'No audio track detected. When prompted, make sure to tick "Share tab audio" (or "Share system audio"). ' +
-                'Alternatively, use "Capture Microphone Only".'
+                'Alternatively, use "Microphone Only".'
             );
             return;
           }
@@ -294,12 +305,6 @@ export function useTranscription(language = 'en-US') {
           displayStream.getVideoTracks()[0]?.addEventListener('ended', () => {
             stopRecording();
           });
-        } else {
-          // Prompt for mic permission up front so a denial surfaces as a
-          // clear error before recognition starts.
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          // Recognition opens the mic itself — release our handle.
-          micStream.getTracks().forEach((t) => t.stop());
         }
 
         isRecordingRef.current = true;
