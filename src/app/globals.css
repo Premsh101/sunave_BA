@@ -3,6 +3,93 @@
 
 /* ===== Font Imports ===== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ===== Stitch Design Tokens (Tailwind v4 theme) =====
+   Two palettes:
+   - `mk-*`  → marketing shell (deep obsidian + electric violet, Instrument Serif)
+   - `app-*` → authenticated app shell (deep navy + periwinkle/indigo, Plus Jakarta Sans)
+*/
+@theme {
+  /* Marketing palette */
+  --color-mk-bg: #040712;
+  --color-mk-surface: #0f172a;
+  --color-mk-surface-high: #1e293b;
+  --color-mk-surface-low: #020617;
+  --color-mk-primary: #8b5cf6;
+  --color-mk-primary-dark: #6d28d9;
+  --color-mk-primary-light: #c4b5fd;
+  --color-mk-secondary: #94a3b8;
+  --color-mk-fg: #f8fafc;
+  --color-mk-outline: #334155;
+
+  /* App palette */
+  --color-app-bg: #0b1326;
+  --color-app-surface-lowest: #060e20;
+  --color-app-surface-low: #131b2e;
+  --color-app-surface: #171f33;
+  --color-app-surface-high: #222a3d;
+  --color-app-surface-highest: #2d3449;
+  --color-app-bright: #31394d;
+  --color-app-outline: #464554;
+  --color-app-outline-strong: #908fa0;
+  --color-app-fg: #dae2fd;
+  --color-app-fg-variant: #c7c4d7;
+  --color-app-primary: #c0c1ff;
+  --color-app-primary-container: #8083ff;
+  --color-app-on-primary-container: #0d0096;
+  --color-app-inverse-primary: #494bd6;
+  --color-app-tertiary: #ffb783;
+  --color-app-error: #ffb4ab;
+
+  /* Shared action color (buttons) */
+  --color-action: #6366f1;
+  --color-action-hover: #4f46e5;
+
+  /* Fonts */
+  --font-display: 'Instrument Serif', serif;
+  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+  --font-geist: 'Geist', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* ===== Stitch shared utilities ===== */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  transition: all 200ms ease-in-out;
+}
+.glass-card:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+.glow-button {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.glow-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+.doc-skeleton {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
 
 /* ===== Theme CSS Variables ===== */
 /* Dark theme (default) */
