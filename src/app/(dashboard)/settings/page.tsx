@@ -1,16 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Bell, Globe, Palette, Shield, Eye, EyeOff, Check } from 'lucide-react';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { User, Bell, Palette, Shield, Cpu, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme, THEMES } from '@/features/theme/ThemeContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
-import { typography, semantic, colors } from '@/styles/theme';
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -19,16 +15,29 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 
-const SECTION_ICONS: Record<string, React.ReactNode> = {
-  profile: <User size={18} />,
-  notifications: <Bell size={18} />,
-  language: <Globe size={18} />,
-  appearance: <Palette size={18} />,
-  security: <Shield size={18} />,
+const SECTIONS = [
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'providers', label: 'AI Providers', icon: Cpu },
+  { id: 'appearance', label: 'Appearance', icon: Palette },
+  { id: 'security', label: 'Security', icon: Shield },
+] as const;
+type Section = (typeof SECTIONS)[number]['id'];
+
+const SECTION_META: Record<Section, { title: string; description: string }> = {
+  profile: { title: 'Profile', description: 'Your account details and default AI preferences.' },
+  notifications: { title: 'Notifications', description: 'Choose how Sunave keeps you informed.' },
+  providers: { title: 'AI Providers', description: 'The generation fallback chain, configured on the server.' },
+  appearance: { title: 'Appearance', description: 'Personalize the look and feel of the app.' },
+  security: { title: 'Security', description: 'Sign-in methods and password management.' },
 };
 
-const SECTIONS = ['profile', 'notifications', 'appearance', 'security'] as const;
-type Section = typeof SECTIONS[number];
+const AI_PROVIDER_CHAIN = ['OpenRouter', 'Local LLM', 'OpenAI', 'Gemini', 'Claude'];
+
+const inputClass =
+  'w-full bg-app-surface-lowest border border-app-outline rounded-lg px-4 py-2 text-sm text-app-fg outline-none placeholder:text-app-outline-strong focus:border-action focus:ring-2 focus:ring-action/20 transition-all';
+const labelClass = 'block text-sm font-medium text-app-fg-variant mb-1.5';
+const panelClass = 'bg-app-surface border border-app-outline rounded-xl p-6';
 
 export default function SettingsPage() {
   const { user, firebaseUser } = useAuth();
@@ -110,339 +119,325 @@ export default function SettingsPage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+    } catch (err) {
+      const { code, message } = (err ?? {}) as { code?: string; message?: string };
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
         setPwError('Current password is incorrect.');
-      } else if (err.code === 'auth/provider-already-linked') {
+      } else if (code === 'auth/provider-already-linked') {
         setPwError('Email/password is already linked. Use the update flow instead.');
       } else {
-        setPwError(err.message || 'Failed to update password.');
+        setPwError(message || 'Failed to update password.');
       }
     } finally {
       setPwLoading(false);
     }
   };
 
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: typography.fontSize.sm,
-    fontWeight: 500,
-    color: semantic.text.secondary,
-    marginBottom: '0.5rem',
-  };
+  const meta = SECTION_META[activeSection];
+  const showSaveFooter = activeSection === 'profile' || activeSection === 'notifications';
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.625rem 0.875rem',
-    background: semantic.bg.tertiary,
-    border: `1px solid ${semantic.border.primary}`,
-    borderRadius: '8px',
-    color: semantic.text.primary,
-    fontSize: typography.fontSize.sm,
-    outline: 'none',
-    boxSizing: 'border-box',
-  };
-
-  const sidebarLinkStyle = (active: boolean): React.CSSProperties => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.625rem 0.875rem',
-    borderRadius: '8px',
-    fontSize: typography.fontSize.sm,
-    fontWeight: active ? 500 : 400,
-    color: active ? semantic.text.brand : semantic.text.secondary,
-    background: active ? semantic.bg.brandSubtle : 'transparent',
-    cursor: 'pointer',
-    border: 'none',
-    textAlign: 'left',
-    width: '100%',
-    transition: 'all 0.15s',
-  });
+  const toggle = (value: boolean, onToggle: () => void, ariaLabel: string) => (
+    <button
+      onClick={onToggle}
+      role="switch"
+      aria-checked={value}
+      aria-label={ariaLabel}
+      className={`relative w-11 h-6 rounded-full transition-colors ${value ? 'bg-action' : 'bg-app-surface-highest'}`}
+    >
+      <span
+        className="absolute rounded-full bg-white transition-all"
+        style={{ top: 3, width: 18, height: 18, left: value ? 23 : 3 }}
+      />
+    </button>
+  );
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: typography.fontSize['2xl'], fontWeight: 700, color: semantic.text.primary, marginBottom: '0.25rem' }}>
-          Settings
-        </h1>
-        <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-          Manage your account, preferences, and notifications
-        </p>
+    <div className="p-4 md:p-8 flex flex-col md:flex-row gap-8 max-w-[1440px] mx-auto text-app-fg">
+      {/* LEFT — tab rail */}
+      <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
+        <span className="text-xs font-semibold uppercase tracking-widest text-app-outline-strong px-3 mb-1">
+          Configuration
+        </span>
+        {SECTIONS.map(({ id, label, icon: Icon }) => {
+          const active = activeSection === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveSection(id)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${
+                active ? 'bg-app-surface-high text-app-fg' : 'text-app-fg-variant hover:bg-app-surface-high hover:text-app-fg'
+              }`}
+            >
+              <Icon size={17} className={active ? 'text-app-primary' : 'text-app-outline-strong'} />
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '2rem' }}>
-        {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          {SECTIONS.map((s) => (
-            <button key={s} style={sidebarLinkStyle(activeSection === s)} onClick={() => setActiveSection(s)}>
-              <span style={{ color: activeSection === s ? semantic.text.brand : semantic.text.muted }}>
-                {SECTION_ICONS[s]}
-              </span>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </button>
-          ))}
+      {/* RIGHT — content */}
+      <div className="flex-1 max-w-[800px] flex flex-col gap-6 min-w-0">
+        <div>
+          <h3 className="text-xl font-semibold text-app-fg">{meta.title}</h3>
+          <p className="text-sm text-app-fg-variant mt-1">{meta.description}</p>
         </div>
 
-        {/* Content */}
-        <Card>
-          {activeSection === 'profile' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Profile</h2>
+        {activeSection === 'profile' && (
+          <div className={`${panelClass} flex flex-col gap-5`}>
+            <div>
+              <label className={labelClass}>Display Name</label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+                className={inputClass}
+              />
+            </div>
 
-              <div>
-                <label style={labelStyle}>Display Name</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  style={inputStyle}
-                  placeholder="Your name"
-                />
+            <div>
+              <label className={labelClass}>Email</label>
+              <input type="email" value={user?.email || ''} disabled className={`${inputClass} opacity-60 cursor-not-allowed`} />
+              <p className="text-xs text-app-outline-strong mt-1.5">Email is managed through your Google account.</p>
+            </div>
+
+            <div>
+              <label className={labelClass}>Plan</label>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-app-inverse-primary/20 text-app-primary border border-app-inverse-primary/30">
+                  {user?.plan?.toUpperCase() || 'FREE'}
+                </span>
+                <span className="text-sm text-app-outline-strong">
+                  {user?.plan === 'free' ? 'Upgrade to Pro for unlimited access' : 'Active subscription'}
+                </span>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label style={labelStyle}>Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  style={{ ...inputStyle, opacity: 0.6 }}
-                />
-                <p style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted, marginTop: '0.375rem' }}>
-                  Email is managed through your Google account.
-                </p>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Plan</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Badge variant="brand">{user?.plan?.toUpperCase() || 'FREE'}</Badge>
-                  <span style={{ fontSize: typography.fontSize.sm, color: semantic.text.muted }}>
-                    {user?.plan === 'free' ? 'Upgrade to Pro for unlimited access' : 'Active subscription'}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Default AI Tone</label>
-                <select value={aiTone} onChange={(e) => setAiTone(e.target.value as 'professional' | 'casual' | 'technical' | 'executive')} style={inputStyle}>
+                <label className={labelClass}>Default AI Tone</label>
+                <select
+                  value={aiTone}
+                  onChange={(e) => setAiTone(e.target.value as 'professional' | 'casual' | 'technical' | 'executive')}
+                  className={inputClass}
+                >
                   <option value="professional">Professional</option>
                   <option value="casual">Casual</option>
                   <option value="technical">Technical</option>
                   <option value="executive">Executive</option>
                 </select>
               </div>
-
               <div>
-                <label style={labelStyle}>Default Transcription Mode</label>
-                <select value={transcriptionMode} onChange={(e) => setTranscriptionMode(e.target.value as 'bot-free' | 'ai-assistant')} style={inputStyle}>
+                <label className={labelClass}>Default Transcription Mode</label>
+                <select
+                  value={transcriptionMode}
+                  onChange={(e) => setTranscriptionMode(e.target.value as 'bot-free' | 'ai-assistant')}
+                  className={inputClass}
+                >
                   <option value="bot-free">Bot-Free Mode</option>
                   <option value="ai-assistant">AI Assistant Mode</option>
                 </select>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeSection === 'notifications' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Notifications</h2>
+        {activeSection === 'notifications' && (
+          <div className={`${panelClass} flex flex-col gap-3`}>
+            {[
+              { label: 'Email notifications', desc: 'Summaries and generated documents in your inbox.', key: 'email', value: emailNotif, setter: setEmailNotif },
+              { label: 'In-app notifications', desc: 'Alerts inside the Sunave workspace.', key: 'inApp', value: inAppNotif, setter: setInAppNotif },
+            ].map(({ label, desc, key, value, setter }) => (
+              <div key={key} className="flex items-center justify-between gap-4 px-4 py-3.5 bg-app-surface-lowest border border-app-outline/50 rounded-lg">
+                <div>
+                  <div className="text-sm font-medium text-app-fg">{label}</div>
+                  <div className="text-xs text-app-outline-strong mt-0.5">{desc}</div>
+                </div>
+                {toggle(value, () => setter(!value), label)}
+              </div>
+            ))}
+          </div>
+        )}
 
-              {[
-                { label: 'Email notifications', key: 'email', value: emailNotif, setter: setEmailNotif },
-                { label: 'In-app notifications', key: 'inApp', value: inAppNotif, setter: setInAppNotif },
-              ].map(({ label, key, value, setter }) => (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1rem', background: semantic.bg.tertiary, borderRadius: '8px' }}>
-                  <span style={{ fontSize: typography.fontSize.sm, color: semantic.text.primary }}>{label}</span>
+        {activeSection === 'providers' && (
+          <div className={`${panelClass} flex flex-col gap-3`}>
+            <p className="text-[13px] text-app-outline-strong">
+              Document generation tries each provider in order until one succeeds.
+            </p>
+            {AI_PROVIDER_CHAIN.map((name, i) => (
+              <div key={name} className="flex items-center gap-4 px-4 py-3.5 bg-app-surface-lowest border border-app-outline/50 rounded-lg">
+                <span className="w-7 h-7 shrink-0 rounded-md bg-app-surface-high text-app-primary text-xs font-mono font-semibold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-app-fg">{name}</div>
+                  <div className="text-xs text-app-outline-strong mt-0.5">Configured via server environment</div>
+                </div>
+                <Cpu size={16} className="text-app-outline-strong shrink-0" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeSection === 'appearance' && (
+          <div className={panelClass}>
+            <label className={`${labelClass} mb-4`}>Theme</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {THEMES.map((t) => {
+                const isActive = theme === t.value;
+                return (
                   <button
-                    onClick={() => setter(!value)}
-                    aria-checked={value}
-                    role="switch"
-                    aria-label={label}
-                    style={{
-                      width: 44, height: 24, borderRadius: 12,
-                      background: value ? colors.brand[500] : semantic.bg.elevated,
-                      border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
-                    }}
+                    key={t.value}
+                    onClick={() => setTheme(t.value)}
+                    className={`flex flex-col gap-3 p-4 rounded-xl text-left transition-colors border-2 ${
+                      isActive
+                        ? 'bg-app-inverse-primary/10 border-app-inverse-primary'
+                        : 'bg-app-surface-lowest border-app-outline/50 hover:border-app-outline'
+                    }`}
                   >
-                    <div style={{
-                      width: 18, height: 18, borderRadius: '50%', background: '#fff',
-                      position: 'absolute', top: 3, left: value ? 23 : 3, transition: 'left 0.2s',
-                    }} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeSection === 'appearance' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Appearance</h2>
-              <div>
-                <label style={{ ...labelStyle, marginBottom: '1rem' }}>Theme</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  {THEMES.map((t) => {
-                    const isActive = theme === t.value;
-                    return (
-                      <button
-                        key={t.value}
-                        onClick={() => setTheme(t.value)}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.75rem',
-                          padding: '1rem',
-                          background: isActive ? semantic.bg.brandSubtle : semantic.bg.tertiary,
-                          border: `2px solid ${isActive ? semantic.border.brand : semantic.border.primary}`,
-                          borderRadius: '10px',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.15s',
-                          position: 'relative',
-                        }}
-                      >
-                        {/* Theme preview swatch */}
-                        <div style={{
-                          width: '100%',
-                          height: 56,
-                          borderRadius: 6,
-                          background: t.preview.bg,
-                          border: `1px solid rgba(128,128,128,0.2)`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.5rem',
-                          overflow: 'hidden',
-                        }}>
-                          <div style={{ width: 32, height: 6, borderRadius: 3, background: t.preview.accent }} />
-                          <div style={{ width: 20, height: 6, borderRadius: 3, background: t.preview.text, opacity: 0.5 }} />
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontWeight: 600, fontSize: typography.fontSize.sm, color: semantic.text.primary }}>{t.label}</span>
-                            {isActive && <Check size={14} color={colors.brand[400]} />}
-                          </div>
-                          <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted, marginTop: '0.25rem' }}>{t.description}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'security' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>Security</h2>
-
-              {/* Auth method */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1rem', background: semantic.bg.tertiary, borderRadius: '8px' }}>
-                <div>
-                  <div style={{ fontSize: typography.fontSize.sm, fontWeight: 500, color: semantic.text.primary }}>Google Sign-In</div>
-                  <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted }}>Connected via {user?.email}</div>
-                </div>
-                <Badge variant="success">Active</Badge>
-              </div>
-
-              {/* Change / Set Password */}
-              <div style={{ padding: '1.25rem', background: semantic.bg.tertiary, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: typography.fontSize.sm, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.25rem' }}>
-                    {isGoogleOnly ? 'Set a Password' : 'Change Password'}
-                  </div>
-                  <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted }}>
-                    {isGoogleOnly
-                      ? 'Add an email/password sign-in option to your account.'
-                      : 'Update your account password.'}
-                  </div>
-                </div>
-
-                {!isGoogleOnly && (
-                  <div>
-                    <label style={labelStyle}>Current Password</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showCurrentPw ? 'text' : 'password'}
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        style={{ ...inputStyle, paddingRight: '2.5rem', background: semantic.bg.elevated }}
-                        placeholder="Current password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPw(!showCurrentPw)}
-                        style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: semantic.text.muted }}
-                      >
-                        {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
+                    <div
+                      className="w-full h-14 rounded-md border border-app-outline/30 flex items-center justify-center gap-2 overflow-hidden"
+                      style={{ background: t.preview.bg }}
+                    >
+                      <span className="w-8 h-1.5 rounded-full" style={{ background: t.preview.accent }} />
+                      <span className="w-5 h-1.5 rounded-full opacity-50" style={{ background: t.preview.text }} />
                     </div>
-                  </div>
-                )}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-app-fg">{t.label}</span>
+                        {isActive && <Check size={14} className="text-app-primary" />}
+                      </div>
+                      <div className="text-xs text-app-outline-strong mt-1">{t.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
+        {activeSection === 'security' && (
+          <div className="flex flex-col gap-6">
+            {/* Auth method */}
+            <div className={`${panelClass} flex items-center justify-between gap-4`}>
+              <div>
+                <div className="text-sm font-medium text-app-fg">Google Sign-In</div>
+                <div className="text-xs text-app-outline-strong mt-0.5">Connected via {user?.email}</div>
+              </div>
+              <span className="text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-green-400/10 text-green-400">
+                Active
+              </span>
+            </div>
+
+            {/* Change / Set Password */}
+            <div className={`${panelClass} flex flex-col gap-4`}>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">
+                  {isGoogleOnly ? 'Set a Password' : 'Change Password'}
+                </div>
+                <div className="text-xs text-app-outline-strong mt-0.5">
+                  {isGoogleOnly
+                    ? 'Add an email/password sign-in option to your account.'
+                    : 'Update your account password.'}
+                </div>
+              </div>
+
+              {!isGoogleOnly && (
                 <div>
-                  <label style={labelStyle}>New Password</label>
-                  <div style={{ position: 'relative' }}>
+                  <label className={labelClass}>Current Password</label>
+                  <div className="relative">
                     <input
-                      type={showNewPw ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      style={{ ...inputStyle, paddingRight: '2.5rem', background: semantic.bg.elevated }}
-                      placeholder="At least 8 characters"
+                      type={showCurrentPw ? 'text' : 'password'}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Current password"
+                      className={`${inputClass} pr-10`}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowNewPw(!showNewPw)}
-                      style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: semantic.text.muted }}
+                      onClick={() => setShowCurrentPw(!showCurrentPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-app-outline-strong hover:text-app-fg transition-colors"
+                      aria-label={showCurrentPw ? 'Hide current password' : 'Show current password'}
                     >
-                      {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
+              )}
 
-                <div>
-                  <label style={labelStyle}>Confirm Password</label>
+              <div>
+                <label className={labelClass}>New Password</label>
+                <div className="relative">
                   <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    style={{ ...inputStyle, background: semantic.bg.elevated }}
-                    placeholder="Repeat new password"
+                    type={showNewPw ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    className={`${inputClass} pr-10`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPw(!showNewPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-app-outline-strong hover:text-app-fg transition-colors"
+                    aria-label={showNewPw ? 'Hide new password' : 'Show new password'}
+                  >
+                    {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-
-                {pwError && (
-                  <div style={{ padding: '0.625rem 0.875rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: semantic.text.danger, fontSize: typography.fontSize.sm }}>
-                    {pwError}
-                  </div>
-                )}
-                {pwSuccess && (
-                  <div style={{ padding: '0.625rem 0.875rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', color: semantic.text.success, fontSize: typography.fontSize.sm }}>
-                    {pwSuccess}
-                  </div>
-                )}
-
-                <Button
-                  variant="primary"
-                  onClick={handleChangePassword}
-                  loading={pwLoading}
-                  style={{ alignSelf: 'flex-start' }}
-                >
-                  {isGoogleOnly ? 'Set Password' : 'Update Password'}
-                </Button>
               </div>
-            </div>
-          )}
 
-          {activeSection !== 'security' && activeSection !== 'appearance' && (
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${semantic.border.primary}`, display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
-              {saved && <span style={{ fontSize: typography.fontSize.sm, color: colors.success[400] }}>Changes saved ✓</span>}
-              <Button variant="primary" onClick={handleSave} loading={saving}>
-                Save Changes
-              </Button>
+              <div>
+                <label className={labelClass}>Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  className={inputClass}
+                />
+              </div>
+
+              {pwError && (
+                <div className="px-4 py-2.5 rounded-lg bg-app-error/10 border border-app-error/30 text-sm text-app-error">
+                  {pwError}
+                </div>
+              )}
+              {pwSuccess && (
+                <div className="px-4 py-2.5 rounded-lg bg-green-400/10 border border-green-400/20 text-sm text-green-400">
+                  {pwSuccess}
+                </div>
+              )}
+
+              <button
+                onClick={handleChangePassword}
+                disabled={pwLoading}
+                className="self-start inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-action hover:bg-action-hover text-white text-sm font-medium disabled:opacity-50 transition-colors"
+              >
+                {pwLoading && <Loader2 size={14} className="animate-spin" />}
+                {isGoogleOnly ? 'Set Password' : 'Update Password'}
+              </button>
             </div>
-          )}
-        </Card>
+          </div>
+        )}
+
+        {showSaveFooter && (
+          <div className="flex justify-end items-center gap-4 pt-2">
+            {saved && (
+              <span className="inline-flex items-center gap-1.5 text-sm text-green-400">
+                <Check size={14} />
+                Changes saved
+              </span>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-action hover:bg-action-hover text-white text-sm font-medium disabled:opacity-50 transition-colors"
+            >
+              {saving && <Loader2 size={14} className="animate-spin" />}
+              Save Changes
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
