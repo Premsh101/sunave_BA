@@ -1,18 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { FileText, Plus, Search, Download, Trash2, Eye } from 'lucide-react';
+import { Calendar, Download, Eye, FileText, Plus, Search, Trash2, X } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { COLLECTIONS } from '@/lib/firebase/collections';
 import { useAuth } from '@/features/auth/AuthContext';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
 import GenerateDocumentModal from '@/components/ui/GenerateDocumentModal';
-import { typography, semantic, colors } from '@/styles/theme';
 import type { AIDocument } from '@/types/document';
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -31,13 +26,29 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   custom: 'Custom',
 };
 
-const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  completed: 'success',
-  generating: 'warning',
-  failed: 'danger',
-  draft: 'neutral',
-  reviewed: 'success',
-  approved: 'success',
+const DOC_TYPE_BADGES: Record<string, string> = {
+  mom: 'MOM',
+  brd: 'BRD',
+  frd: 'FRD',
+  'user-stories': 'Stories',
+  'acceptance-criteria': 'AC',
+  'sprint-tasks': 'Tasks',
+  'test-scenarios': 'Tests',
+  'action-items': 'Actions',
+  'risks-dependencies': 'Risks',
+  'grooming-questions': 'Grooming',
+  'follow-up-email': 'Email',
+  'stakeholder-summary': 'Summary',
+  custom: 'Custom',
+};
+
+const statusPill: Record<string, string> = {
+  completed: 'bg-app-primary/10 text-app-primary border-app-primary/20',
+  generating: 'bg-app-tertiary/10 text-app-tertiary border-app-tertiary/20',
+  failed: 'bg-app-error/10 text-app-error border-app-error/20',
+  draft: 'bg-app-surface-highest text-app-fg-variant border-app-outline',
+  reviewed: 'bg-app-primary/10 text-app-primary border-app-primary/20',
+  approved: 'bg-app-primary/10 text-app-primary border-app-primary/20',
 };
 
 function formatDate(iso: string): string {
@@ -51,6 +62,7 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<AIDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<AIDocument | null>(null);
 
@@ -89,105 +101,168 @@ export default function DocumentsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const filtered = documents.filter((d) =>
-    d.title?.toLowerCase().includes(search.toLowerCase()),
+  const typesPresent = Array.from(new Set(documents.map((d) => d.type)));
+
+  const filtered = documents.filter(
+    (d) =>
+      d.title?.toLowerCase().includes(search.toLowerCase()) &&
+      (typeFilter === 'all' || d.type === typeFilter),
   );
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="px-4 md:px-8 pt-8 pb-8 max-w-[1200px] mx-auto">
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 style={{ fontSize: typography.fontSize['2xl'], fontWeight: 700, color: semantic.text.primary, marginBottom: '0.25rem' }}>
-            Documents
-          </h1>
-          <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm }}>
-            AI-generated documents from your meeting transcripts
+          <h2 className="text-2xl md:text-[32px] font-bold text-app-fg mb-1">Document Repository</h2>
+          <p className="text-app-fg-variant">
+            Access, manage, and generate high-fidelity AI documents for your analytical workflows.
           </p>
         </div>
-        <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
-          Generate Document
-        </Button>
+        <button
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors shrink-0"
+        >
+          <Plus size={15} />
+          Generate New Document
+        </button>
       </div>
 
-      {/* Search */}
-      <div style={{ display: 'flex', alignItems: 'center', background: semantic.bg.secondary, border: `1px solid ${semantic.border.primary}`, borderRadius: '8px', padding: '0.5rem 1rem', marginBottom: '1.5rem', gap: '0.5rem', maxWidth: '400px' }}>
-        <Search size={16} color={semantic.text.muted} />
-        <input
-          type="text"
-          placeholder="Search documents..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ background: 'transparent', border: 'none', outline: 'none', color: semantic.text.primary, fontSize: typography.fontSize.sm, width: '100%' }}
-        />
+      {/* Search + filter chips */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-8">
+        <div className="relative shrink-0">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-app-outline-strong"
+          />
+          <input
+            type="text"
+            placeholder="Search documents..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-56 bg-app-surface border border-app-outline rounded-lg py-2 pl-10 pr-3 text-sm text-app-fg placeholder:text-app-outline-strong focus:outline-none focus:border-app-primary transition-colors"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setTypeFilter('all')}
+            className={`text-xs font-medium rounded-full px-3 py-1.5 border transition-colors ${
+              typeFilter === 'all'
+                ? 'bg-app-surface-high border-app-primary text-app-primary'
+                : 'bg-app-surface-low border-app-outline text-app-fg-variant hover:text-app-fg hover:border-app-primary/40'
+            }`}
+          >
+            All
+          </button>
+          {typesPresent.map((type) => (
+            <button
+              key={type}
+              onClick={() => setTypeFilter(type)}
+              className={`text-xs font-medium rounded-full px-3 py-1.5 border transition-colors ${
+                typeFilter === type
+                  ? 'bg-app-surface-high border-app-primary text-app-primary'
+                  : 'bg-app-surface-low border-app-outline text-app-fg-variant hover:text-app-fg hover:border-app-primary/40'
+              }`}
+            >
+              {DOC_TYPE_LABELS[type] || type}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <div className="flex justify-center py-16">
           <Spinner size={32} />
         </div>
       ) : filtered.length === 0 ? (
-        <Card style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: semantic.bg.brandSubtle, margin: '0 auto 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={28} color={semantic.text.brand} />
+        <div className="rounded-xl border border-app-outline bg-app-surface-low text-center px-8 py-16">
+          <div className="w-14 h-14 rounded-2xl bg-app-primary-container/20 mx-auto mb-5 flex items-center justify-center">
+            <FileText size={28} className="text-app-primary" />
           </div>
-          <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>
-            {search ? 'No documents found' : 'No documents yet'}
-          </h2>
-          <p style={{ color: semantic.text.secondary, marginBottom: '1.5rem' }}>
-            {search ? 'Try a different search term.' : 'Generate a document from a meeting transcript to get started.'}
+          <h3 className="text-xl font-semibold text-app-fg mb-2">
+            {search || typeFilter !== 'all' ? 'No documents found' : 'No documents yet'}
+          </h3>
+          <p className="text-app-fg-variant mb-6">
+            {search || typeFilter !== 'all'
+              ? 'Try a different search term or filter.'
+              : 'Generate a document from a meeting transcript to get started.'}
           </p>
-          {!search && (
-            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
+          {!search && typeFilter === 'all' && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+            >
+              <Plus size={15} />
               Generate Document
-            </Button>
+            </button>
           )}
-        </Card>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((document) => (
-            <Card key={document.id} hoverable style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, background: semantic.bg.brandSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FileText size={18} color={colors.brand[400]} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 500, color: semantic.text.primary }}>{document.title || 'Untitled Document'}</div>
-                  <div style={{ fontSize: typography.fontSize.xs, color: semantic.text.muted, marginTop: '0.25rem' }}>
-                    {DOC_TYPE_LABELS[document.type] || document.type} • {formatDate(document.createdAt)}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Badge variant={statusVariant[document.status] ?? 'neutral'}>
+            <div
+              key={document.id}
+              className="glass-card rounded-xl p-4 pb-14 flex flex-col group relative overflow-hidden min-h-[160px]"
+            >
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-app-primary bg-app-primary-container/20 border border-app-primary/20 rounded-md px-2 py-1">
+                  <FileText size={12} />
+                  {DOC_TYPE_BADGES[document.type] || document.type}
+                </span>
+                <span
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+                    statusPill[document.status] ?? 'bg-app-surface-highest text-app-fg-variant border-app-outline'
+                  }`}
+                >
                   {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
-                </Badge>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => setSelectedDoc(document)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: semantic.text.secondary, padding: '4px' }}
-                    title="View"
-                  >
-                    <Eye size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDownload(document)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: semantic.text.secondary, padding: '4px' }}
-                    title="Download"
-                  >
-                    <Download size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(document.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.danger[400], padding: '4px' }}
-                    title="Delete"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                </span>
               </div>
-            </Card>
+
+              <h3 className="text-xl font-semibold text-app-fg line-clamp-2 mb-4">
+                {document.title || 'Untitled Document'}
+              </h3>
+
+              <div className="mt-auto pt-3 border-t border-app-outline/30 flex items-center gap-2 text-xs text-app-outline-strong">
+                <Calendar size={12} />
+                {formatDate(document.createdAt)}
+                {typeof document.metadata?.wordCount === 'number' && (
+                  <>
+                    <span className="w-1 h-1 rounded-full bg-app-outline inline-block" />
+                    {document.metadata.wordCount} words
+                  </>
+                )}
+              </div>
+
+              {/* Hover action bar */}
+              <div className="absolute bottom-0 left-0 right-0 bg-app-surface-high/90 backdrop-blur-sm border-t border-app-outline/30 flex divide-x divide-app-outline/30 translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 lg:group-focus-within:translate-y-0 transition-transform duration-200">
+                <button
+                  onClick={() => setSelectedDoc(document)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-app-fg-variant hover:text-app-primary transition-colors"
+                  title="View"
+                >
+                  <Eye size={14} />
+                  View
+                </button>
+                <button
+                  onClick={() => handleDownload(document)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-app-fg-variant hover:text-app-primary transition-colors"
+                  title="Download"
+                >
+                  <Download size={14} />
+                  Download
+                </button>
+                <button
+                  onClick={() => handleDelete(document.id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-app-error hover:brightness-125 transition-all"
+                  title="Delete"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -206,25 +281,42 @@ export default function DocumentsPage() {
       {/* View Document Modal */}
       {selectedDoc && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}
+          className="fixed inset-0 bg-black/60 z-[1000] flex items-center justify-center p-4 md:p-8"
           onClick={() => setSelectedDoc(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: semantic.bg.secondary, borderRadius: '12px', width: '100%', maxWidth: '800px', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+            className="bg-app-surface border border-app-outline rounded-xl w-full max-w-[800px] max-h-[80vh] overflow-hidden flex flex-col"
           >
-            <div style={{ padding: '1.5rem', borderBottom: `1px solid ${semantic.border.primary}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: typography.fontSize.lg, fontWeight: 600, color: semantic.text.primary }}>{selectedDoc.title}</h2>
-              <button onClick={() => setSelectedDoc(null)} style={{ background: 'none', border: 'none', color: semantic.text.muted, cursor: 'pointer', fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+            <div className="p-6 border-b border-app-outline/40 flex justify-between items-center gap-4">
+              <h3 className="text-lg font-semibold text-app-fg truncate">{selectedDoc.title}</h3>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="text-app-outline-strong hover:text-app-fg transition-colors shrink-0"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
             </div>
-            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
-              <pre style={{ whiteSpace: 'pre-wrap', color: semantic.text.primary, fontFamily: 'inherit', fontSize: typography.fontSize.sm, lineHeight: 1.7 }}>
+            <div className="p-6 overflow-y-auto flex-1">
+              <pre className="whitespace-pre-wrap text-sm leading-7 text-app-fg font-jakarta">
                 {selectedDoc.fullContent}
               </pre>
             </div>
-            <div style={{ padding: '1rem 1.5rem', borderTop: `1px solid ${semantic.border.primary}`, display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <Button variant="secondary" onClick={() => setSelectedDoc(null)}>Close</Button>
-              <Button variant="primary" icon={<Download size={16} />} onClick={() => handleDownload(selectedDoc)}>Download</Button>
+            <div className="px-6 py-4 border-t border-app-outline/40 flex justify-end gap-3">
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="text-sm font-medium text-app-fg-variant border border-app-outline rounded-lg px-4 py-2 hover:text-app-fg hover:border-app-primary/40 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => handleDownload(selectedDoc)}
+                className="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+              >
+                <Download size={15} />
+                Download
+              </button>
             </div>
           </div>
         </div>
