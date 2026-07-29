@@ -49,7 +49,7 @@ export default function EnterprisePage() {
       {/* Hero */}
       <section className="max-w-[1440px] mx-auto px-4 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <div>
-          <h1 className="font-display text-[48px] md:text-[64px] leading-[1.05] text-mk-fg mb-6">
+          <h1 className="font-display text-[48px] md:text-[64px] leading-[1.05] text-luminous mb-6">
             AI for High-Stakes Teams
           </h1>
           <p className="text-lg text-mk-secondary font-light mb-10 max-w-xl">

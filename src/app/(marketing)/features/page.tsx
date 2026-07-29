@@ -38,7 +38,7 @@ export default function FeaturesPage() {
         <span className="text-mk-primary text-xs uppercase tracking-widest mb-2 font-semibold">
           Core Capabilities
         </span>
-        <h1 className="font-display text-[56px] md:text-[80px] leading-[1.0] mb-8 text-mk-fg">
+        <h1 className="font-display text-[56px] md:text-[80px] leading-[1.0] mb-8 text-luminous">
           Uncompromising <br />
           Audio Intelligence.
         </h1>
@@ -115,7 +115,7 @@ export default function FeaturesPage() {
       <section className="mb-16 py-12 border-y border-white/5 max-w-[1440px] mx-auto px-4">
         <Reveal>
           <div className="text-center mb-16">
-            <h2 className="font-display text-[40px] md:text-[48px] text-mk-fg mb-6">
+            <h2 className="font-display text-[40px] md:text-[48px] text-luminous mb-6">
               Resilient Processing Core
             </h2>
             <p className="text-lg text-mk-secondary max-w-2xl mx-auto font-light">

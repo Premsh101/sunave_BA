@@ -30,7 +30,7 @@ export default function PricingPage() {
 
       {/* Hero */}
       <div className="text-center mb-12 pt-8">
-        <h1 className="font-display text-[48px] md:text-[64px] leading-[1.05] text-mk-fg mb-6">
+        <h1 className="font-display text-[48px] md:text-[64px] leading-[1.05] text-luminous mb-6">
           Simple, transparent pricing.
         </h1>
         <p className="text-lg text-mk-secondary max-w-xl mx-auto font-light">

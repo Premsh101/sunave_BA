@@ -2,10 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
+  AudioLines,
   PlayCircle,
   BrainCircuit,
   FileText,
-  FileCode2,
   ListTodo,
   Layers,
   MessagesSquare,
@@ -13,15 +13,8 @@ import {
   Terminal,
 } from 'lucide-react';
 import ShaderBackground from '@/components/marketing/ShaderBackground';
+import Hero3DPipeline from '@/components/marketing/Hero3DPipeline';
 import Reveal from '@/components/marketing/Reveal';
-
-const pulseBars = [
-  { width: 'w-16', delay: '0ms' },
-  { width: 'w-24', delay: '100ms' },
-  { width: 'w-12', delay: '200ms' },
-  { width: 'w-32', delay: '300ms' },
-  { width: 'w-20', delay: '400ms' },
-];
 
 const chartBars = [
   { height: '30%', primary: false },
@@ -37,20 +30,22 @@ export default function MarketingHome() {
       <ShaderBackground />
       <div className="relative z-10 pt-16 pb-16">
         {/* Hero */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 md:px-6 max-w-[1440px] mx-auto relative -mt-16 pt-32 lg:pt-16">
-          <div className="text-center z-20 max-w-4xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel mb-8">
-              <span className="w-2 h-2 rounded-full bg-mk-primary animate-pulse shadow-[0_0_8px_#8b5cf6]" />
-              <span className="text-xs text-mk-fg tracking-wider">Introducing Sunave 2.0</span>
+        <section className="min-h-[92vh] flex flex-col items-center justify-center px-4 md:px-6 max-w-[1440px] mx-auto relative -mt-16 pt-28 pb-8 lg:pt-20">
+          <div className="text-center z-20 max-w-4xl mx-auto mb-4 md:mb-2">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel mb-8">
+              <span className="w-2 h-2 rounded-full bg-mk-teal animate-pulse shadow-[0_0_8px_#5eead4]" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
+                Introducing Sunave 2.0
+              </span>
             </div>
-            <h1 className="font-display text-[56px] md:text-[80px] leading-[1.0] mb-8 text-mk-fg drop-shadow-2xl italic">
+            <h1 className="font-display text-[52px] md:text-[72px] leading-[1.02] mb-6 italic text-luminous drop-shadow-[0_0_40px_rgba(139,92,246,0.25)]">
               Your meetings,
               <br />
               distilled to brilliance.
             </h1>
-            <p className="text-lg text-mk-secondary max-w-2xl mx-auto mb-10 font-light">
-              Transform raw conversation into structured intelligence. Experience the clarity of
-              automated documentation driven by cognitive AI.
+            <p className="text-lg text-mk-body max-w-2xl mx-auto mb-8 font-light">
+              Sunave listens to the whole room, transcribes it live in your browser, and hands back
+              the requirements documents you would otherwise have written by hand.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
@@ -70,59 +65,24 @@ export default function MarketingHome() {
             </div>
           </div>
 
-          {/* Visual metaphor: sound → AI core → documents */}
-          <div className="relative w-full max-w-5xl mx-auto h-[400px]">
-            <div className="absolute inset-0 flex items-center justify-center gap-8 md:gap-16">
-              {/* Sound (left) */}
-              <div className="w-1/3 h-full flex flex-col items-end justify-center gap-2 opacity-60 pr-8 border-r border-white/10 relative">
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-32 h-32 bg-mk-primary/20 blur-[50px] rounded-full" />
-                {pulseBars.map((bar) => (
-                  <div
-                    key={bar.delay}
-                    className={`h-1 ${bar.width} bg-gradient-to-l from-mk-primary to-transparent rounded-full animate-pulse`}
-                    style={{ animationDelay: bar.delay }}
-                  />
-                ))}
-              </div>
-              {/* AI core (center) */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.3)]">
-                  <div className="w-8 h-8 rounded-full bg-mk-primary animate-ping opacity-20 absolute" />
-                  <BrainCircuit size={24} className="text-white relative" />
+          {/* 3D pipeline: soundwave enters the engine, documents come out */}
+          <div className="relative w-full max-w-6xl mx-auto">
+            <Hero3DPipeline className="h-[260px] sm:h-[320px] md:h-[380px] w-full" />
+
+            {/* Stage captions, aligned under the three zones of the scene */}
+            <div className="grid grid-cols-3 gap-2 md:gap-8 mt-2 md:-mt-4 px-2">
+              {[
+                { icon: AudioLines, label: 'Meeting audio in', tint: 'text-mk-primary-light' },
+                { icon: BrainCircuit, label: 'Sunave engine', tint: 'text-mk-fg' },
+                { icon: FileText, label: 'Documents out', tint: 'text-mk-teal' },
+              ].map((stage) => (
+                <div key={stage.label} className="flex flex-col items-center gap-2 text-center">
+                  <stage.icon size={16} className={stage.tint} />
+                  <span className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.16em] text-mk-muted">
+                    {stage.label}
+                  </span>
                 </div>
-              </div>
-              {/* Documents (right) */}
-              <div className="w-1/3 h-full flex flex-col justify-center gap-6 pl-8 relative z-10">
-                <div className="doc-skeleton rounded-xl p-4 w-64 transform rotate-2 hover:rotate-0 transition-transform duration-500 shadow-2xl">
-                  <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                    <FileText size={16} className="text-mk-secondary" />
-                    <span className="text-[10px] text-mk-secondary uppercase tracking-widest">
-                      Business Requirements
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-3/4 bg-white/10 rounded" />
-                    <div className="h-2 w-full bg-white/5 rounded" />
-                    <div className="h-2 w-5/6 bg-white/5 rounded" />
-                  </div>
-                </div>
-                <div className="doc-skeleton rounded-xl p-4 w-64 transform -rotate-1 hover:rotate-0 transition-transform duration-500 shadow-2xl -ml-4">
-                  <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                    <FileCode2 size={16} className="text-mk-primary" />
-                    <span className="text-[10px] text-mk-secondary uppercase tracking-widest">
-                      Technical Spec
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-2/3 bg-white/10 rounded" />
-                    <div className="h-2 w-full bg-white/5 rounded" />
-                    <div className="flex gap-2">
-                      <div className="h-6 w-1/3 bg-mk-primary/10 rounded border border-mk-primary/20" />
-                      <div className="h-6 w-1/3 bg-mk-primary/10 rounded border border-mk-primary/20" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -131,7 +91,7 @@ export default function MarketingHome() {
         <section className="max-w-[1440px] mx-auto px-4 md:px-6 py-16">
           <Reveal>
             <div className="text-center mb-24">
-              <h2 className="font-display text-[40px] md:text-[48px] text-mk-fg mb-6">
+              <h2 className="font-display text-[40px] md:text-[48px] text-luminous mb-6">
                 Intelligence at every layer
               </h2>
               <p className="text-lg text-mk-secondary max-w-2xl mx-auto font-light">

@@ -130,9 +130,13 @@ export default function ShaderBackground() {
     };
   }, []);
 
+  // NOTE: z-0 (not a negative z-index) on purpose. A fixed element with a
+  // negative z-index paints *behind* the opaque `body` and page-wrapper
+  // backgrounds, which made this canvas invisible. z-0 keeps it above those
+  // backgrounds while page content sits on `relative z-10` above it.
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen -z-10 pointer-events-none bg-mk-bg">
-      <canvas ref={canvasRef} className="block w-full h-full opacity-80" />
+    <div className="fixed inset-0 z-0 pointer-events-none">
+      <canvas ref={canvasRef} className="block w-full h-full opacity-45" />
     </div>
   );
 }

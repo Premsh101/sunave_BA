@@ -55,7 +55,7 @@ export default function SecurityPage() {
 
       {/* Hero */}
       <section className="text-center max-w-3xl mx-auto pt-8">
-        <h1 className="font-display text-[56px] md:text-[72px] leading-[1.0] mb-8 bg-gradient-to-r from-mk-primary to-mk-primary-light bg-clip-text text-transparent">
+        <h1 className="font-display text-[56px] md:text-[72px] leading-[1.0] mb-8 text-luminous">
           Uncompromising Security.
         </h1>
         <p className="text-lg text-mk-secondary font-light">
