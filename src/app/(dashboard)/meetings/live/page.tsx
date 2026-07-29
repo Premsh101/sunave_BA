@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Monitor, Square, Save, Languages, Volume2, UserCircle } from 'lucide-react';
+import { Mic, Monitor, Square, Save, Languages, Volume2, VolumeX, UserCircle } from 'lucide-react';
 import { useTranscription } from '@/features/transcription/useTranscription';
+import { useTextToSpeech } from '@/features/speech/useTextToSpeech';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import GenerateDocumentModal from '@/components/ui/GenerateDocumentModal';
@@ -13,7 +14,8 @@ export default function LiveMeeting() {
   const [mode, setMode] = useState<'bot-free' | 'ai-assistant'>('bot-free');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
-  const { isRecording, startRecording, stopRecording, transcript, interimTranscript, error } = useTranscription(language);
+  const { isRecording, isSupported, startRecording, stopRecording, transcript, interimTranscript, error } = useTranscription(language);
+  const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } = useTextToSpeech(language);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,11 +25,22 @@ export default function LiveMeeting() {
   }, [transcript, interimTranscript]);
 
   const handleStart = (captureMode: 'mic' | 'system') => {
+    // Never read aloud while capturing — the mic would transcribe the TTS voice.
+    if (isSpeaking) stopSpeaking();
     startRecording(captureMode);
+  };
+
+  const handleReadAloud = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak([transcript, interimTranscript].filter(Boolean).join(' ').trim());
+    }
   };
 
   const handleSaveAndGenerate = () => {
     if (isRecording) stopRecording();
+    if (isSpeaking) stopSpeaking();
     setShowGenerateModal(true);
   };
 
@@ -78,6 +91,18 @@ export default function LiveMeeting() {
             </select>
           </div>
           
+          {ttsSupported && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              disabled={isRecording || (!transcript && !interimTranscript)}
+              onClick={handleReadAloud}
+            >
+              {isSpeaking ? 'Stop Reading' : 'Read Aloud'}
+            </Button>
+          )}
+
           <Button
             variant="primary"
             size="sm"
@@ -102,8 +127,16 @@ export default function LiveMeeting() {
               </div>
           <h2 style={{ fontSize: typography.fontSize.xl, fontWeight: 600, color: semantic.text.primary, marginBottom: '0.5rem' }}>Start Transcription</h2>
               <p style={{ color: semantic.text.secondary, marginBottom: '2rem' }}>
-                Capture audio directly from your browser. Perfect for Google Meet, Teams, or Zoom — no bots required.
+                Speech recognition runs natively in your browser — no bots, no cloud keys.
+                Perfect for Google Meet, Teams, or Zoom. For meeting audio, share the tab
+                and keep it playing on your speakers.
               </p>
+            </div>
+          )}
+
+          {!isSupported && (
+            <div style={{ padding: '1rem', background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: '8px', color: colors.danger[400], marginBottom: '2rem' }}>
+              Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.
             </div>
           )}
 
@@ -145,10 +178,10 @@ export default function LiveMeeting() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {!isRecording ? (
             <>
-              <Button variant="primary" onClick={() => handleStart('system')} icon={<Monitor size={18} />}>
-                Capture System Audio (Tab/Meet)
+              <Button variant="primary" disabled={!isSupported} onClick={() => handleStart('system')} icon={<Monitor size={18} />}>
+                Capture Tab Audio (Meet/Zoom)
               </Button>
-              <Button variant="secondary" onClick={() => handleStart('mic')} icon={<Mic size={18} />}>
+              <Button variant="secondary" disabled={!isSupported} onClick={() => handleStart('mic')} icon={<Mic size={18} />}>
                 Capture Microphone Only
               </Button>
             </>

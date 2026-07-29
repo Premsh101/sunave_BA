@@ -70,7 +70,6 @@ $apis = @(
     "cloudbuild.googleapis.com",
     "artifactregistry.googleapis.com",
     "secretmanager.googleapis.com",
-    "speech.googleapis.com",
     "generativelanguage.googleapis.com"
 )
 
@@ -84,17 +83,12 @@ Write-Host "`nCreating Secret Manager placeholders..." -ForegroundColor Yellow
 Write-Host "NOTE: You MUST go to the GCP Console to add new versions with the actual secret values." -ForegroundColor Red
 
 gcloud secrets create GEMINI_API_KEY --replication-policy="automatic"
-gcloud secrets create GOOGLE_APPLICATION_CREDENTIALS --replication-policy="automatic"
 
 # Grant Cloud Build service account access to secrets
 $projectNumber = gcloud projects describe $projectName --format="value(projectNumber)"
 $serviceAccount = "$projectNumber@cloudbuild.gserviceaccount.com"
 
 gcloud secrets add-iam-policy-binding GEMINI_API_KEY `
-    --member="serviceAccount:$serviceAccount" `
-    --role="roles/secretmanager.secretAccessor"
-
-gcloud secrets add-iam-policy-binding GOOGLE_APPLICATION_CREDENTIALS `
     --member="serviceAccount:$serviceAccount" `
     --role="roles/secretmanager.secretAccessor"
 

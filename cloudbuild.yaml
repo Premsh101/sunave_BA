@@ -24,7 +24,7 @@ steps:
       - '--port'
       - '3000'
       - '--set-secrets'
-      - 'GEMINI_API_KEY=gemini-api-key:latest,GOOGLE_APPLICATION_CREDENTIALS=google-credentials:latest'
+      - 'GEMINI_API_KEY=gemini-api-key:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/sunave-app:$COMMIT_SHA'

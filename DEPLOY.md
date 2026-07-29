@@ -145,8 +145,6 @@ FIREBASE_PROJECT_ID=<your-firebase-project-id>
 FIREBASE_CLIENT_EMAIL=<your-firebase-service-account-client-email>
 FIREBASE_PRIVATE_KEY=<your-firebase-service-account-private-key>
 
-GOOGLE_APPLICATION_CREDENTIALS=<compact JSON of your GCP service account key — see note below>
-GOOGLE_CLOUD_PROJECT_ID=<your-gcp-project-id>
 ```
 
 > **Firebase Admin SDK** — used by the Next.js API routes to verify session cookies and access Firestore server-side. Obtain the service account JSON from Firebase Console → Project Settings → Service Accounts → Generate new private key.
@@ -166,11 +164,7 @@ GOOGLE_CLOUD_PROJECT_ID=<your-gcp-project-id>
 > - `FIREBASE_CLIENT_EMAIL` — the `client_email` field in the downloaded JSON
 > - `FIREBASE_PRIVATE_KEY` — the `private_key` field in the downloaded JSON.  You may paste the raw value including the surrounding `"` quotes; the app will strip them automatically.  If you copy the value from a JSON file, the `\n` escape sequences will be converted to real newlines automatically.
 >
-> **Google Cloud Speech-to-Text** (`GOOGLE_APPLICATION_CREDENTIALS`) — used by the custom server for real-time transcription via the Socket.IO stream. This is a separate GCP service account with Speech-to-Text API enabled.
-> ```bash
-> cat your-service-account-key.json | jq -c .
-> ```
-> Paste the entire single-line output as the value. Coolify stores it encrypted.
+> **Speech-to-text / text-to-speech** — both run entirely in the browser via the Web Speech API (`SpeechRecognition` / `speechSynthesis`). No Google Cloud Speech service account, `GOOGLE_APPLICATION_CREDENTIALS`, or Socket.IO configuration is needed.
 
 ### Gemini AI (Secret)
 ```
@@ -292,8 +286,6 @@ Using port `3010` avoids conflict with any other apps deployed on the same Cooli
 | `FIREBASE_PROJECT_ID` | ✅* | **Yes** | Firebase project ID — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
 | `FIREBASE_CLIENT_EMAIL` | ✅* | **Yes** | Firebase service account client email — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
 | `FIREBASE_PRIVATE_KEY` | ✅* | **Yes** | Firebase service account private key — only needed when NOT using `FIREBASE_SERVICE_ACCOUNT_JSON` |
-| `GOOGLE_APPLICATION_CREDENTIALS` | ✅ | **Yes** | GCP service account JSON (compact) |
-| `GOOGLE_CLOUD_PROJECT_ID` | ✅ | **Yes** | GCP project ID |
 | `GEMINI_API_KEY` | ✅ | **Yes** | Google Generative AI key |
 | `RAZORPAY_KEY_ID` | ✅ | **Yes** | Razorpay key ID |
 | `RAZORPAY_KEY_SECRET` | ✅ | **Yes** | Razorpay secret key |
@@ -319,10 +311,8 @@ Using port `3010` avoids conflict with any other apps deployed on the same Cooli
 - Add `sunave.tech` and `www.sunave.tech` to Firebase Console → Authentication → Authorized domains.
 
 ### Speech transcription not working
-- Verify `GOOGLE_APPLICATION_CREDENTIALS` contains the correct compact JSON.
-- Confirm the Google Cloud Speech-to-Text API is enabled in your GCP project.
-- Check container logs in Coolify for `Speech API Error` messages.
-
-### Socket.IO connection issues
-- Coolify's Traefik supports WebSocket upgrades by default — no extra configuration needed for a single instance.
-- If running multiple instances in future, add a Redis adapter (`socket.io-redis`) for multi-instance coordination.
+- Transcription and read-aloud run in the browser via the Web Speech API — nothing to configure server-side.
+- Use Chrome, Edge, or Safari; Firefox does not ship `SpeechRecognition`.
+- The site must be served over HTTPS (or `localhost`) for microphone access.
+- Make sure microphone permission is granted for the site.
+- For tab/system audio, tick "Share tab audio" when prompted and keep the meeting playing through speakers (not headphones), since recognition listens via the microphone.
