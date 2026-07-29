@@ -1,235 +1,143 @@
 import type { Metadata } from 'next';
-import React, { type CSSProperties } from 'react';
-import { Shield, Lock, Eye, Server, Key, CheckCircle, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import { colors, typography, semantic, borderRadius } from '@/styles/theme';
-import { container, grid, gradientText } from '@/styles/mixins';
+import React from 'react';
+import { Shield, Lock, CheckCircle2, KeyRound, Users, Trash2, Server } from 'lucide-react';
+import Reveal from '@/components/marketing/Reveal';
 
 export const metadata: Metadata = {
   title: 'Security',
-  description: 'Sunave is built for enterprise-grade security. End-to-end encryption, data privacy, SOC 2-aligned controls, and compliance-ready data management.',
+  description:
+    'Sunave is built for high-stakes business environments. Local browser transcription, zero audio retention, end-to-end encryption, and compliance-ready controls.',
 };
 
-const securityPillars = [
+const privacyChecklist = [
   {
-    icon: <Lock size={28} color={colors.brand[400]} />,
-    title: 'End-to-End Encryption',
-    description: 'All meeting data is encrypted in transit (TLS 1.3) and at rest (AES-256). Audio, transcripts, and documents are never stored unencrypted.',
+    title: 'Zero Audio Retention',
+    desc: 'We do not store, process, or transmit raw audio files to our servers.',
   },
   {
-    icon: <Eye size={28} color={colors.accent[400]} />,
-    title: 'Data Privacy',
-    description: 'You own your data. We never sell or train on your meeting content. GDPR and CCPA compliant with right-to-erasure support built in.',
-  },
-  {
-    icon: <Shield size={28} color={colors.brand[400]} />,
-    title: 'Access Control',
-    description: 'Role-based access control with fine-grained permissions. SSO/SAML support for enterprise identity providers including Okta and Azure AD.',
-  },
-  {
-    icon: <Server size={28} color={colors.accent[400]} />,
-    title: 'Infrastructure Security',
-    description: 'Hosted on Google Cloud with regional data residency options. VPC isolation, private networking, and regular penetration testing.',
-  },
-  {
-    icon: <Key size={28} color={colors.brand[400]} />,
-    title: 'Authentication',
-    description: 'Multi-factor authentication (MFA), session management, token rotation, and brute-force protection on all accounts.',
-  },
-  {
-    icon: <CheckCircle size={28} color={colors.accent[400]} />,
-    title: 'Compliance & Audit',
-    description: 'Detailed audit logs for all user actions, customizable data retention policies, and export tools to support compliance audits.',
+    title: 'Local Transcription',
+    desc: 'Speech-to-text happens entirely within your browser.',
   },
 ];
 
-const certifications = [
-  { name: 'SOC 2 Type II', status: 'In Progress', desc: 'Security, availability, and confidentiality controls.' },
-  { name: 'GDPR', status: 'Compliant', desc: 'EU General Data Protection Regulation compliance.' },
-  { name: 'CCPA', status: 'Compliant', desc: 'California Consumer Privacy Act compliance.' },
-  { name: 'ISO 27001', status: 'Planned', desc: 'International information security standard.' },
-];
+const complianceBadges = ['SOC2 Type II', 'GDPR', 'ISO 27001'];
 
-const faqs = [
+const practices = [
   {
-    q: 'Where is my meeting data stored?',
-    a: 'By default, all data is stored in Google Cloud data centers in the United States. Enterprise customers can request EU or APAC regional data residency.',
+    icon: Lock,
+    title: 'Encryption in Transit',
+    desc: 'All traffic between your browser and our services is protected with TLS 1.3.',
   },
   {
-    q: 'Do you train AI models on our meeting content?',
-    a: 'Never. Your meeting data is never used to train or fine-tune any AI models. We use established third-party models via encrypted API calls with zero data retention agreements.',
+    icon: Server,
+    title: 'Encryption at Rest',
+    desc: 'Transcripts and generated documents are encrypted at rest with AES-256.',
   },
   {
-    q: 'How long is meeting data retained?',
-    a: 'Free and Pro plans retain data for 90 days. Enterprise customers can configure custom retention periods from 7 days to 7 years, or opt for immediate deletion post-processing.',
+    icon: Users,
+    title: 'Access Controls',
+    desc: 'Role-based access with fine-grained permissions, MFA, and SSO for enterprise identity providers.',
   },
   {
-    q: 'Can we self-host Sunave?',
-    a: 'Yes. Enterprise customers can deploy Sunave on-premises or in their own cloud environment (AWS, GCP, Azure) with full source access under an enterprise license agreement.',
+    icon: Trash2,
+    title: 'Data Deletion',
+    desc: 'Right-to-erasure built in. Configure retention windows or delete your data on demand at any time.',
   },
 ];
 
 export default function SecurityPage() {
-  const heroStyle: CSSProperties = {
-    padding: '8rem 0 5rem',
-    textAlign: 'center',
-    background: semantic.bg.primary,
-  };
-
-  const iconWrapStyle: CSSProperties = {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.xl,
-    background: semantic.bg.brandSubtle,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '1.25rem',
-  };
-
-  const faqItemStyle: CSSProperties = {
-    padding: '1.5rem',
-    borderRadius: borderRadius.lg,
-    background: semantic.bg.secondary,
-    border: `1px solid ${semantic.border.subtle}`,
-    marginBottom: '1rem',
-  };
-
   return (
-    <>
+    <div className="relative pt-24 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto w-full flex flex-col gap-16">
+      {/* Blur orb backdrop */}
+      <div className="absolute inset-x-0 top-0 -z-10 flex justify-center opacity-20 pointer-events-none overflow-hidden">
+        <div className="w-[700px] h-[500px] bg-mk-primary rounded-full blur-[130px] mix-blend-screen -translate-y-1/3" />
+      </div>
+
       {/* Hero */}
-      <section style={heroStyle}>
-        <div style={container}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Badge variant="brand" icon={<Shield size={12} />}>
-              Enterprise Security
-            </Badge>
-          </div>
-          <h1 style={{
-            fontSize: typography.fontSize['5xl'],
-            fontWeight: typography.fontWeight.extrabold,
-            color: semantic.text.primary,
-            marginBottom: '1rem',
-            letterSpacing: typography.letterSpacing.tighter,
-          }}>
-            Built for{' '}
-            <span style={gradientText()}>enterprise trust</span>
-          </h1>
-          <p style={{ fontSize: typography.fontSize.xl, color: semantic.text.secondary, maxWidth: '640px', margin: '0 auto 2.5rem' }}>
-            Sunave is designed from the ground up to meet the security and compliance requirements of the world's most security-conscious organizations.
-          </p>
-          <Link href="/enterprise">
-            <Button variant="primary" size="lg" iconRight={<ArrowRight size={18} />}>
-              Talk to our security team
-            </Button>
-          </Link>
-        </div>
+      <section className="text-center max-w-3xl mx-auto pt-8">
+        <h1 className="font-display text-[56px] md:text-[72px] leading-[1.0] mb-8 bg-gradient-to-r from-mk-primary to-mk-primary-light bg-clip-text text-transparent">
+          Uncompromising Security.
+        </h1>
+        <p className="text-lg text-mk-secondary font-light">
+          Built for high-stakes business environments. We engineered Sunave AI from the ground up
+          to ensure your most sensitive conversations remain private, compliant, and under your
+          control.
+        </p>
       </section>
 
-      {/* Security Pillars */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.secondary }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['3xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, textAlign: 'center', marginBottom: '4rem' }}>
-            Security by design
-          </h2>
-          <div style={grid(3, '1.5rem')}>
-            {securityPillars.map((pillar) => (
-              <Card key={pillar.title} variant="elevated" hoverable>
-                <div style={iconWrapStyle}>{pillar.icon}</div>
-                <h3 style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: semantic.text.primary, marginBottom: '0.75rem' }}>
-                  {pillar.title}
-                </h3>
-                <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm, lineHeight: 1.65 }}>
-                  {pillar.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Certifications */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.primary }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['3xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, textAlign: 'center', marginBottom: '1rem' }}>
-            Compliance & certifications
-          </h2>
-          <p style={{ color: semantic.text.secondary, textAlign: 'center', fontSize: typography.fontSize.lg, marginBottom: '4rem' }}>
-            We hold and pursue industry-standard compliance certifications.
-          </p>
-          <div style={grid(4, '1.5rem')}>
-            {certifications.map((cert) => (
-              <Card key={cert.name} variant="elevated">
-                <div style={{
-                  display: 'inline-block',
-                  padding: '3px 12px',
-                  borderRadius: borderRadius.full,
-                  fontSize: typography.fontSize.xs,
-                  fontWeight: typography.fontWeight.semibold,
-                  background: cert.status === 'Compliant'
-                    ? 'rgba(34,197,94,0.12)'
-                    : cert.status === 'In Progress'
-                    ? 'rgba(99,102,241,0.12)'
-                    : 'rgba(245,158,11,0.12)',
-                  color: cert.status === 'Compliant'
-                    ? colors.success[400]
-                    : cert.status === 'In Progress'
-                    ? colors.brand[400]
-                    : colors.warning[400],
-                  marginBottom: '1rem',
-                }}>
-                  {cert.status}
+      {/* Privacy anchor panel */}
+      <Reveal>
+        <section className="glass-panel rounded-xl p-8 md:p-16 relative overflow-hidden">
+          <Shield
+            size={280}
+            className="absolute -top-10 -right-10 text-mk-primary opacity-10 pointer-events-none"
+            strokeWidth={1}
+          />
+          <div className="relative max-w-2xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-mk-primary/10 flex items-center justify-center shrink-0">
+                <Lock size={22} className="text-mk-primary" />
+              </div>
+              <h2 className="font-display text-[32px] md:text-[40px] leading-tight text-mk-primary">
+                Audio Never Leaves Your Browser.
+              </h2>
+            </div>
+            <p className="text-mk-secondary font-light mb-10">
+              Our core processing engine runs on the browser&apos;s native speech APIs. Voice is
+              transcribed locally in your browser before text is sent to our secure AI models for
+              insight generation.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {privacyChecklist.map((item) => (
+                <div key={item.title} className="flex items-start gap-3">
+                  <CheckCircle2 size={20} className="text-mk-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-mk-fg font-medium mb-1">{item.title}</p>
+                    <p className="text-sm text-mk-secondary font-light">{item.desc}</p>
+                  </div>
                 </div>
-                <h3 style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold, color: semantic.text.primary, marginBottom: '0.5rem' }}>
-                  {cert.name}
-                </h3>
-                <p style={{ color: semantic.text.muted, fontSize: typography.fontSize.sm }}>
-                  {cert.desc}
-                </p>
-              </Card>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Reveal>
 
-      {/* FAQ */}
-      <section style={{ padding: '6rem 0', background: semantic.bg.secondary }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['3xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, textAlign: 'center', marginBottom: '3rem' }}>
-            Security FAQ
+      {/* Compliance badges */}
+      <Reveal>
+        <section className="flex flex-wrap items-center justify-center gap-4">
+          {complianceBadges.map((badge) => (
+            <span
+              key={badge}
+              className="inline-flex items-center gap-2 glass-panel rounded-full px-5 py-2.5 text-sm text-mk-fg"
+            >
+              <KeyRound size={14} className="text-mk-primary" />
+              {badge}
+            </span>
+          ))}
+        </section>
+      </Reveal>
+
+      {/* Practices grid */}
+      <Reveal>
+        <section>
+          <h2 className="font-display text-[36px] md:text-[44px] text-mk-fg text-center mb-12">
+            Security practices at every layer
           </h2>
-          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-            {faqs.map((faq) => (
-              <div key={faq.q} style={faqItemStyle}>
-                <h3 style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.semibold, color: semantic.text.primary, marginBottom: '0.75rem' }}>
-                  {faq.q}
-                </h3>
-                <p style={{ color: semantic.text.secondary, fontSize: typography.fontSize.sm, lineHeight: 1.65 }}>
-                  {faq.a}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {practices.map((practice) => (
+              <div key={practice.title} className="glass-panel rounded-xl p-8">
+                <div className="w-12 h-12 rounded-xl bg-mk-primary/10 flex items-center justify-center mb-6">
+                  <practice.icon size={22} className="text-mk-primary" />
+                </div>
+                <h3 className="font-display text-xl text-mk-fg mb-3">{practice.title}</h3>
+                <p className="text-sm text-mk-secondary font-light leading-relaxed">
+                  {practice.desc}
                 </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section style={{ padding: '5rem 0', background: semantic.bg.primary, textAlign: 'center' }}>
-        <div style={container}>
-          <h2 style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: semantic.text.primary, marginBottom: '1rem' }}>
-            Have security questions?
-          </h2>
-          <p style={{ color: semantic.text.secondary, marginBottom: '2rem' }}>
-            Our security team is ready to answer your questions and provide detailed documentation.
-          </p>
-          <Link href="/enterprise">
-            <Button variant="primary" iconRight={<ArrowRight size={16} />}>Contact security team</Button>
-          </Link>
-        </div>
-      </section>
-    </>
+        </section>
+      </Reveal>
+    </div>
   );
 }
